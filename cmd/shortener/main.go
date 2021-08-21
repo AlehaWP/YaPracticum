@@ -20,13 +20,13 @@ func handlerPost (w http.ResponseWriter, r *http.Request){
 	mdURL := MD5(textBody)
 	Urls[mdURL] = string(textBody)
 	w.WriteHeader(201)
-	io.WriteString (w, r.Host + "/" + mdURL)
+	io.WriteString (w, "http://" + r.Host + "/" + mdURL)
 }
 
 func handlerGet(w http.ResponseWriter, r *http.Request){
 	id := r.URL.Path[1:]
 	if val, ok := Urls[id]; ok {
-		w.Header().Add("Location", r.Host + "/" + val)
+		w.Header().Add("Location", "http://" + r.Host + "/" + val)
 		w.WriteHeader(307)
 	} else {
 		w.WriteHeader(400)
