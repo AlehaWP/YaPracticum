@@ -26,7 +26,7 @@ func handlerPost (w http.ResponseWriter, r *http.Request){
 func handlerGet(w http.ResponseWriter, r *http.Request){
 	id := r.URL.Path[1:]
 	if val, ok := Urls[id]; ok {
-		w.Header().Add("Location", "http://" + r.Host + "/" + val)
+		w.Header().Add("Location", val)
 		w.WriteHeader(307)
 	} else {
 		w.WriteHeader(400)
