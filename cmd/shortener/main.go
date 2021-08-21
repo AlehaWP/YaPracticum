@@ -20,7 +20,7 @@ func handlerPost (w http.ResponseWriter, r *http.Request){
 	mdURL := MD5(textBody)
 	Urls[mdURL] = string(textBody)
 	w.WriteHeader(201)
-	io.WriteString (w, mdUrl)
+	io.WriteString (w, mdURL)
 }
 
 func handlerGet(w http.ResponseWriter, r *http.Request){
