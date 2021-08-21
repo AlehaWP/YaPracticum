@@ -32,7 +32,7 @@ func handlerGet(w http.ResponseWriter, r *http.Request){
 		w.Header().Add("Location", val)
 		w.WriteHeader(307)
 	} else {
-		w.WriteHeader(500)
+		w.WriteHeader(400)
 	}
 	w.Write([]byte(id))
 }
@@ -44,7 +44,7 @@ func handlerFunction (w http.ResponseWriter, r *http.Request) {
 		case http.MethodGet:
 			handlerGet(w, r)
 	    default:
-			w.WriteHeader(404)
+			w.WriteHeader(400)
 	}
 }
 
