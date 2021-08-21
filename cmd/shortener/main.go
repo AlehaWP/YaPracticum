@@ -31,12 +31,19 @@ func handlerFunction (w http.ResponseWriter, r *http.Request) {
 			url = string(textBody)
 			mdUrl := MD5(textBody)
 			Urls[mdUrl] = url
+			w.WriteHeader(201)
 			io.WriteString (w, mdUrl)
 		case http.MethodGet:
 			id := r.URL.Path[1:]
-			io.WriteString (w, Urls[id])
+			if val, ok := Urls[id]; ok {
+				w.Header().Add("Location", val)
+				w.WriteHeader(307)
+			} else {
+				w.WriteHeader(500)
+			}
+			w.Write([]byte(id))
 	    default:
-			io.WriteString (w, "default")
+			w.WriteHeader(404)
 	}
 }
 
