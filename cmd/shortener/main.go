@@ -8,14 +8,33 @@ import (
 	_"os"
 	"context"
 	"strings"
+	"crypto/md5"
 )
 
+var Urls map[string]string // =  make(map[int]string)
+
+func MD5(data []byte) string {
+	h := md5.Sum(data)
+	return fmt.Sprintf("%x", h)
+}
+
 func handlerFunction (w http.ResponseWriter, r *http.Request) {
+	url := r.URL.String()
 	switch r.Method{
 		case  http.MethodPost:
-			io.WriteString (w, "Post")
+			textBody, err := io.ReadAll(r.Body)
+			if err != nil {
+
+			}
+			defer r.Body.Close()
+
+			url = string(textBody)
+			mdUrl := MD5(textBody)
+			Urls[mdUrl] = url
+			io.WriteString (w, mdUrl)
 		case http.MethodGet:
-			io.WriteString (w, "Get " + r.URL.Path)
+			id := r.URL.Path[1:]
+			io.WriteString (w, Urls[id])
 	    default:
 			io.WriteString (w, "default")
 	}
@@ -31,8 +50,10 @@ func scanQuit(pSigChan chan bool){
 }
 
 func main() {
-	 mux := http.NewServeMux()
+	Urls =  make(map[string]string)
+	mux := http.NewServeMux()
 	// handler := http.HandlerFunc(handlerFunction)
+	// mux.Handle("/", handler)
 	mux.HandleFunc("/", handlerFunction)
 	server := &http.Server{
         Addr: "localhost:8080",
