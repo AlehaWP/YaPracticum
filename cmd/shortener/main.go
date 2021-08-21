@@ -15,13 +15,10 @@ func MD5(data []byte) string {
 }
 
 func handlerPost (w http.ResponseWriter, r *http.Request){
-	textBody, err := io.ReadAll(r.Body)
-	if err != nil {
-
-	}
+	textBody,_:= io.ReadAll(r.Body)
 	defer r.Body.Close()
-	mdUrl := MD5(textBody)
-	Urls[mdUrl] = string(textBody)
+	mdURL := MD5(textBody)
+	Urls[mdURL] = string(textBody)
 	w.WriteHeader(201)
 	io.WriteString (w, mdUrl)
 }
