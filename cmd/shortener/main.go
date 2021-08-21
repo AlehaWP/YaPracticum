@@ -4,10 +4,6 @@ import (
 	"io"
 	"fmt"
 	"net/http"
-	"time"
-	_"os"
-	"context"
-	"strings"
 	"crypto/md5"
 )
 
@@ -40,38 +36,14 @@ func handlerFunction (w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func scanQuit(pSigChan chan bool){
-	var inputText string
-	for strings.ToLower(inputText) < "quit" {
-		fmt.Println("Для остановки введите Quit")
-		fmt.Scanf("%s\n", &inputText)
-	}
-	pSigChan <- true
-}
 
 func main() {
 	Urls =  make(map[string]string)
 	mux := http.NewServeMux()
-	// handler := http.HandlerFunc(handlerFunction)
-	// mux.Handle("/", handler)
 	mux.HandleFunc("/", handlerFunction)
 	server := &http.Server{
         Addr: "localhost:8080",
 		Handler: mux,
     }
-	go func(){
-		server.ListenAndServe()
-	}()
-
-   	// sigChan := make(chan os.Signal, 1)
-	// signal.Notify(sigChan, os.Interrapt)
-	sigChan := make(chan bool)
-	go scanQuit(sigChan)
-	<- sigChan
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
-	defer cancel()
-
-	server.Shutdown(ctx)
-
+	server.ListenAndServe()
 }
