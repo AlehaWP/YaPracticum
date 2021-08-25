@@ -16,22 +16,27 @@ func (u Url) String() string {
 	return string(u)
 }
 
+func (u Url) MD5() string {
+	h := md5.Sum(u)
+	return fmt.Sprintf("%x", h)
+}
+
 type Urls map[string]Url
 
 func (u Urls) SaveURL(url Url) string {
-	r := u.MD5(url)
+	r := url.MD5()
 	u[r] = url
 	return r
 }
 
-func (u Urls) GetURL(id string) string {
-	return u[id].String()
+func (u Urls) GetURL(id string) (Url, bool){
+	if r, ok := u[id]; ok {
+		return r, true
+	}
+	return nil, false
 }
 
-func (u Urls) MD5(data Url) string {
-	h := md5.Sum(data)
-	return fmt.Sprintf("%x", h)
-}
+
 
 var urlsData Urls
 
@@ -46,15 +51,15 @@ func handlerPost(w http.ResponseWriter, r *http.Request) {
 
 func handlerGet(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Path[1:]
-	if val, ok := urlsData[id]; ok {
-		w.Header().Add("Location", GetURL(id))
+	if val, ok := urlsData.GetURL(id); ok {
+		w.Header().Add("Location", val.String())
 		w.WriteHeader(307)
 	} else {
 		w.WriteHeader(400)
 	}
 }
 
-func handlerFunction(w http.ResponseWriter, r *http.Request) {
+func Router(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
 		handlerPost(w, r)
@@ -65,19 +70,32 @@ func handlerFunction(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func startServer() *http.Server {
+type Server struct {
+	http.Server
+}
+
+func (s Server) start(addr string, router func(http.ResponseWriter, *http.Request)){
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", handlerFunction)
-	s := &http.Server{
-		Addr:    "localhost:8080",
-		Handler: mux,
-	}
+	mux.HandleFunc("/", router)
+	s.Addr = addr
+	s.Handler = mux
 	go func() {
 		if err := s.ListenAndServe(); err != http.ErrServerClosed {
 			log.Fatalf("HTTP server ListenAndServe: %v", err)
 		}
 	}()
-	return s
+}
+
+func (s Server) stop() {
+	if err := s.Shutdown(context.Background()); err != nil {
+		log.Printf("HTTP server Shutdown: %v", err)
+	}
+}
+
+func (s Server) listenChanToQuit(f func(chan bool)) {
+	sigQuitChan := make(chan bool)
+	go f(sigQuitChan)
+	<-sigQuitChan
 }
 
 func scanQuit(ch chan bool) {
@@ -89,15 +107,12 @@ func scanQuit(ch chan bool) {
 	ch <- true
 }
 
+
+
 func main() {
-	urlsData = make(map[string]Url)
-	server := startServer()
-
-	sigQuitChan := make(chan bool)
-	go scanQuit(sigQuitChan)
-	<-sigQuitChan
-
-	if err := server.Shutdown(context.Background()); err != nil {
-		log.Printf("HTTP server Shutdown: %v", err)
-	}
+	urlsData = make(Urls)
+	s := Server{http.Server{}}
+	s.start("localhost:8080", Router)
+	s.listenChanToQuit(scanQuit)
+    s.stop()
 }
