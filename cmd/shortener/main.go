@@ -74,7 +74,7 @@ type Server struct {
 	http.Server
 }
 
-func (s Server) start(addr string, router func(http.ResponseWriter, *http.Request)){
+func (s *Server) start(addr string, router func(http.ResponseWriter, *http.Request)){
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", router)
 	s.Addr = addr
@@ -86,13 +86,13 @@ func (s Server) start(addr string, router func(http.ResponseWriter, *http.Reques
 	}()
 }
 
-func (s Server) stop() {
+func (s *Server) stop() {
 	if err := s.Shutdown(context.Background()); err != nil {
 		log.Printf("HTTP server Shutdown: %v", err)
 	}
 }
 
-func (s Server) listenChanToQuit(f func(chan bool)) {
+func (s *Server) listenChanToQuit(f func(chan bool)) {
 	sigQuitChan := make(chan bool)
 	go f(sigQuitChan)
 	<-sigQuitChan
