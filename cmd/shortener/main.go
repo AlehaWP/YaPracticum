@@ -21,64 +21,33 @@ func (u Url) MD5() string {
 	return fmt.Sprintf("%x", h)
 }
 
-type Urls map[string]Url
+type Repository interface {
+	GetURL(string) (Url, bool)
+	SaveURL(Url) string
+}
 
-func (u Urls) SaveURL(url Url) string {
+type UrlsData map[string]Url
+
+func (u UrlsData) SaveURL(url Url) string {
 	r := url.MD5()
 	u[r] = url
 	return r
 }
 
-func (u Urls) GetURL(id string) (Url, bool){
+func (u UrlsData) GetURL(id string) (Url, bool) {
 	if r, ok := u[id]; ok {
 		return r, true
 	}
 	return nil, false
 }
 
-
-
-var urlsData Urls
-
-func handlerPost(w http.ResponseWriter, r *http.Request) {
-	textBody, _ := io.ReadAll(r.Body)
-	defer r.Body.Close()
-
-	retUrl := "http://" + r.Host + "/" + urlsData.SaveURL(textBody)
-	w.WriteHeader(201)
-	io.WriteString(w, retUrl)
-}
-
-func handlerGet(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Path[1:]
-	if val, ok := urlsData.GetURL(id); ok {
-		w.Header().Add("Location", val.String())
-		w.WriteHeader(307)
-	} else {
-		w.WriteHeader(400)
-	}
-}
-
-func Router(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		handlerPost(w, r)
-	case http.MethodGet:
-		handlerGet(w, r)
-	default:
-		w.WriteHeader(400)
-	}
-}
-
 type Server struct {
 	http.Server
 }
 
-func (s *Server) start(addr string, router func(http.ResponseWriter, *http.Request)){
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", router)
+func (s Server) start(addr string, router func(http.ResponseWriter, *http.Request)) {
 	s.Addr = addr
-	s.Handler = mux
+	s.Handler = http.HandlerFunc(router)
 	go func() {
 		if err := s.ListenAndServe(); err != http.ErrServerClosed {
 			log.Fatalf("HTTP server ListenAndServe: %v", err)
@@ -86,16 +55,48 @@ func (s *Server) start(addr string, router func(http.ResponseWriter, *http.Reque
 	}()
 }
 
-func (s *Server) stop() {
+func (s Server) stop() {
 	if err := s.Shutdown(context.Background()); err != nil {
 		log.Printf("HTTP server Shutdown: %v", err)
 	}
 }
 
-func (s *Server) listenChanToQuit(f func(chan bool)) {
+func (s Server) listenChanToQuit(f func(chan bool)) chan bool {
 	sigQuitChan := make(chan bool)
 	go f(sigQuitChan)
-	<-sigQuitChan
+	return sigQuitChan
+}
+
+func Router(repo Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			handlerPost(w, r, repo)
+		case http.MethodGet:
+			handlerGet(w, r, repo)
+		default:
+			w.WriteHeader(400)
+		}
+	}
+}
+
+func handlerPost(w http.ResponseWriter, r *http.Request, repo Repository) {
+	textBody, _ := io.ReadAll(r.Body)
+	defer r.Body.Close()
+
+	retUrl := "http://" + r.Host + "/" + repo.SaveURL(Url(textBody))
+	w.WriteHeader(201)
+	io.WriteString(w, retUrl)
+}
+
+func handlerGet(w http.ResponseWriter, r *http.Request, repo Repository) {
+	id := r.URL.Path[1:]
+	if val, ok := repo.GetURL(id); ok {
+		w.Header().Add("Location", val.String())
+		w.WriteHeader(307)
+	} else {
+		w.WriteHeader(400)
+	}
 }
 
 func scanQuit(ch chan bool) {
@@ -107,12 +108,9 @@ func scanQuit(ch chan bool) {
 	ch <- true
 }
 
-
-
 func main() {
-	urlsData = make(Urls)
 	s := Server{http.Server{}}
-	s.start("localhost:8080", Router)
-	s.listenChanToQuit(scanQuit)
-    s.stop()
+	s.start("localhost:8082", Router(make(UrlsData)))
+	<-s.listenChanToQuit(scanQuit)
+	s.stop()
 }
