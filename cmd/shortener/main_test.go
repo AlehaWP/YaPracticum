@@ -1,7 +1,9 @@
 package main
 
 import (
+	"githubcom/stretchr/testify/assert"
 	"githubcom/stretchr/testify/mock"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -29,12 +31,23 @@ func TestRouter(t *testing.T) {
 	repoMock.On("SaveURL", Url("www.example.com")).Return("123123asdasd")
 
 	handler := http.HandlerFunc(Router(repoMock))
-	r := httptest.NewRequest("POST", "/", strings.NewReader("www.example.com"))
+	r := httptest.NewRequest("POST", "http://localhost:8082/", strings.NewReader("www.example.com"))
 	w := httptest.NewRecorder()
 	handler.ServeHTTP(w, r)
+	res := w.Result()
+	b, _ := io.ReadAll(res.Body)
+	defer res.Body.Close()
+	assert.Equal(t, 201, w.Result().StatusCode, "Не верный код ответа POST")
+	assert.Equal(t, "http://localhost:8082/123123asdasd", string(b), "Не верный ответ POST")
 
-	t.Errorf("%v", w.Result().StatusCode)
 	r = httptest.NewRequest("GET", "/123123asdasd", strings.NewReader(""))
+	w = httptest.NewRecorder()
 	handler.ServeHTTP(w, r)
-	t.Errorf("%v", w.Header().Get("Location"))
+	assert.Equal(t, 307, w.Result().StatusCode, "Не верный код ответа GET")
+	assert.Equal(t, w.Header().Get("Location"), "www.example.com", "Не верный ответ GET")
+
+	r = httptest.NewRequest("GET", "/123123", strings.NewReader(""))
+	w = httptest.NewRecorder()
+	handler.ServeHTTP(w, r)
+	assert.Equal(t, 400, w.Result().StatusCode, "Не верный код ответа GET")
 }
