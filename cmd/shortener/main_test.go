@@ -1,13 +1,14 @@
 package main
 
 import (
-	"githubcom/stretchr/testify/assert"
-	"githubcom/stretchr/testify/mock"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 type UrlsMock struct {
