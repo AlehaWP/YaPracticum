@@ -1,13 +1,11 @@
 package main
 
 import (
-	"context"
 	"crypto/md5"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
-	"strings"
 )
 
 type Url []byte
@@ -55,17 +53,17 @@ func (s Server) start(addr string, router func(http.ResponseWriter, *http.Reques
 	}()
 }
 
-func (s Server) stop() {
-	if err := s.Shutdown(context.Background()); err != nil {
-		log.Printf("HTTP server Shutdown: %v", err)
-	}
-}
+// func (s Server) stop() {
+// 	if err := s.Shutdown(context.Background()); err != nil {
+// 		log.Printf("HTTP server Shutdown: %v", err)
+// 	}
+// }
 
-func (s Server) listenChanToQuit(f func(chan bool)) chan bool {
-	sigQuitChan := make(chan bool)
-	go f(sigQuitChan)
-	return sigQuitChan
-}
+// func (s Server) listenChanToQuit(f func(chan bool)) chan bool {
+// 	sigQuitChan := make(chan bool)
+// 	go f(sigQuitChan)
+// 	return sigQuitChan
+// }
 
 func Router(repo Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -99,18 +97,18 @@ func handlerGet(w http.ResponseWriter, r *http.Request, repo Repository) {
 	}
 }
 
-func scanQuit(ch chan bool) {
-	var inputText string
-	for strings.ToLower(inputText) != "quit" {
-		fmt.Println("For server stop please input: quit")
-		fmt.Scanf("%s\n", &inputText)
-	}
-	ch <- true
-}
+// func scanQuit(ch chan bool) {
+// 	var inputText string
+// 	for strings.ToLower(inputText) != "quit" {
+// 		fmt.Println("For server stop please input: quit")
+// 		fmt.Scanf("%s\n", &inputText)
+// 	}
+// 	ch <- true
+// }
 
 func main() {
 	s := Server{http.Server{}}
 	s.start("localhost:8082", Router(make(UrlsData)))
-	<-s.listenChanToQuit(scanQuit)
-	s.stop()
+	// <-s.listenChanToQuit(scanQuit)
+	// s.stop()
 }
