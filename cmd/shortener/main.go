@@ -4,8 +4,8 @@ import (
 	"crypto/md5"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
+	"strings"
 )
 
 type Url []byte
@@ -46,11 +46,12 @@ type Server struct {
 func (s Server) start(addr string, router func(http.ResponseWriter, *http.Request)) {
 	s.Addr = addr
 	s.Handler = http.HandlerFunc(router)
-	go func() {
-		if err := s.ListenAndServe(); err != http.ErrServerClosed {
-			log.Fatalf("HTTP server ListenAndServe: %v", err)
-		}
-	}()
+	// go func() {
+	// 	if err := s.ListenAndServe(); err != http.ErrServerClosed {
+	// 		log.Fatalf("HTTP server ListenAndServe: %v", err)
+	// 	}
+	// }()
+	s.ListenAndServe()
 }
 
 // func (s Server) stop() {
@@ -97,14 +98,14 @@ func handlerGet(w http.ResponseWriter, r *http.Request, repo Repository) {
 	}
 }
 
-// func scanQuit(ch chan bool) {
-// 	var inputText string
-// 	for strings.ToLower(inputText) != "quit" {
-// 		fmt.Println("For server stop please input: quit")
-// 		fmt.Scanf("%s\n", &inputText)
-// 	}
-// 	ch <- true
-// }
+func scanQuit(ch chan bool) {
+	var inputText string
+	for strings.ToLower(inputText) != "quit" {
+		fmt.Println("For server stop please input: quit")
+		fmt.Scanf("%s\n", &inputText)
+	}
+	ch <- true
+}
 
 func main() {
 	s := Server{http.Server{}}
