@@ -108,7 +108,7 @@ func handlerGet(w http.ResponseWriter, r *http.Request, repo Repository) {
 
 func main() {
 	s := Server{http.Server{}}
-	s.start("localhost:8082", Router(make(UrlsData)))
+	s.start("localhost:8080", Router(make(UrlsData)))
 	// <-s.listenChanToQuit(scanQuit)
 	// s.stop()
 }
