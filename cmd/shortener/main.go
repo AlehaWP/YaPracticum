@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
+	// "strings"
 	"context"
 	"log"
 	"github.com/go-chi/chi/v5"
@@ -118,5 +118,5 @@ func main() {
 	s := new(Server)
 	urlData := make(UrlsData)
 	s.start("localhost:8080", &urlData)
-	s.listenChanToQuit(scanQuit)
+	// s.listenChanToQuit(scanQuit)
 }
