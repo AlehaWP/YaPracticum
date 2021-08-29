@@ -5,18 +5,17 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	// "strings"
 	"context"
 	"log"
 	"github.com/go-chi/chi/v5"
 )
 
-//Interface BdData
+//Repository Interface bd urls
 type Repository interface {
 	GetURL(string) (string, bool)
 	SaveURL([]byte) string
 }
-
+//UrlsData Repository of urls. Realize Repository interface
 type UrlsData map[string][]byte
 
 func (u *UrlsData) SaveURL(url []byte) string {
@@ -32,7 +31,7 @@ func (u *UrlsData) GetURL(id string) (string, bool) {
 	return "", false
 }
 
-
+//MD5 func for hash.
 func MD5(b []byte) string {
 	h := md5.Sum(b)
 	return fmt.Sprintf("%x", h)
@@ -52,37 +51,13 @@ func (s *Server) start(addr string, repo Repository) {
 	})
 	s.Addr = addr
 	s.Handler = r
-	// Stop Server by print quit
-	// go func() {
 	if err := s.ListenAndServe(); err != http.ErrServerClosed {
 		log.Fatalf("HTTP server ListenAndServe: %v", err)
 	}
-	// }()
 }
 
-// Stop Server by print quit
-// func (s *Server) listenChanToQuit(f func(chan bool)) {
-// 	sigQuitChan := make(chan bool)
-// 	go f(sigQuitChan)
-// 	<-sigQuitChan
-// 	s.stop()
-// }
 
-// func (s *Server) stop() {
-// 	if err := s.Shutdown(context.Background()); err != nil {
-// 		log.Printf("HTTP server Shutdown: %v", err)
-// 	}
-// }
-
-// func scanQuit(ch chan bool) {
-// 	var inputText string
-// 	for strings.ToLower(inputText) != "quit" {
-// 		fmt.Println("For server stop please input: quit")
-// 		fmt.Scanf("%s\n", &inputText)
-// 	}
-// 	ch <- true
-// }
-
+// handlerUrlPost Saves url from request body to repository
 func handlerUrlPost(repo Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		textBody, _ := io.ReadAll(r.Body)
@@ -93,6 +68,7 @@ func handlerUrlPost(repo Repository) http.HandlerFunc {
 	}
 }
 
+// UrlCtx for parameter transfer without direct access to router
 func UrlCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	  ctx := context.WithValue(r.Context(), "id", chi.URLParam(r, "id"))
@@ -100,6 +76,7 @@ func UrlCtx(next http.Handler) http.Handler {
 	})
 }
 
+// handlerUrlGet Returns url from repository to resp.Head - "Location"
 func handlerUrlGet(repo Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -117,5 +94,4 @@ func main() {
 	s := new(Server)
 	urlData := make(UrlsData)
 	s.start("localhost:8080", &urlData)
-	// s.listenChanToQuit(scanQuit)
 }
