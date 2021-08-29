@@ -105,7 +105,6 @@ func handlerUrlGet(repo Repository) http.HandlerFunc {
 		ctx := r.Context()
 		id := ctx.Value("id").(string)
 		if val, ok := repo.GetURL(id); ok {
-			log.Println(val)
 			w.Header().Add("Location", val)
 			w.WriteHeader(307)
 		} else {

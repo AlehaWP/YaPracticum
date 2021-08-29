@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -26,24 +27,37 @@ func (m UrlsMock) GetURL(id string) (string, bool) {
 }
 
 func TestHandlerUrlGet(t *testing.T) {
-	repoMock := UrlsMock{}
-	repoMock.On("GetURL", "123123asdasd").Return("www.example.com", true)
-	repoMock.On("GetURL", "123123").Return("", false)
+	dataTests := map[string]map[string]interface{}{
+		"test1": {
+			"reqID"      : "123123asdasd",
+			"result"     : "www.example.com",
+			"resStatus"  : 307,
+			"mockReturn1": "www.example.com",
+			"mockReturn2": true,
 
+		},
+		"test2": {
+			"reqID"      : "123123",
+			"result"     : "",
+			"resStatus"  : 400,
+			"mockReturn1": "",
+			"mockReturn2": false,
+		},
+	}
+
+	repoMock := new(UrlsMock)
 	handler := http.HandlerFunc(handlerUrlGet(repoMock))
 
-	r := httptest.NewRequest("GET", "/123123asdasd", strings.NewReader(""))
-	w := httptest.NewRecorder()
-	ctx := context.WithValue(context.Background() , "id", "123123asdasd")
-	handler.ServeHTTP(w, r.WithContext(ctx))
-	assert.Equal(t, 307, w.Result().StatusCode, "Не верный код ответа GET")
-	assert.Equal(t, w.Header().Get("Location"), "www.example.com", "Не верный ответ GET")
-
-	r = httptest.NewRequest("GET", "/123123", strings.NewReader(""))
-	w = httptest.NewRecorder()
-	ctx = context.WithValue(context.Background() , "id", "123123")
-	handler.ServeHTTP(w, r.WithContext(ctx))
-	assert.Equal(t, 400, w.Result().StatusCode, "Не верный код ответа GET")
+	for key, value := range dataTests {
+		log.Println("start test", key)
+		repoMock.On("GetURL", value["reqID"].(string)).Return(value["mockReturn1"].(string), value["mockReturn2"].(bool))
+		r := httptest.NewRequest("GET", "/"+value["reqID"].(string), strings.NewReader(""))
+		w := httptest.NewRecorder()
+		ctx := context.WithValue(context.Background() , "id", value["reqID"].(string))
+		handler.ServeHTTP(w, r.WithContext(ctx))
+		assert.Equal(t, value["resStatus"].(int), w.Result().StatusCode, "Не верный код ответа GET")
+		assert.Equal(t, w.Header().Get("Location"), value["result"].(string), "Не верный ответ GET")
+	}
 }
 
 
