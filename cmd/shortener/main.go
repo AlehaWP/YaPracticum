@@ -11,7 +11,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-
+//Interface BdData
 type Repository interface {
 	GetURL(string) (string, bool)
 	SaveURL([]byte) string
@@ -42,6 +42,7 @@ type Server struct {
 	http.Server
 }
 
+//Start Server with router
 func (s *Server) start(addr string, repo Repository) {
 	r := chi.NewRouter()
 	r.Post("/", handlerUrlPost(repo))
@@ -49,32 +50,38 @@ func (s *Server) start(addr string, repo Repository) {
 		r.Use(UrlCtx)
 		r.Get("/", handlerUrlGet(repo))
 	})
-	// r.Get("/{id}", handlerUrlGet(repo))
 	s.Addr = addr
 	s.Handler = r
-	go func() {
-		if err := s.ListenAndServe(); err != http.ErrServerClosed {
-			log.Fatalf("HTTP server ListenAndServe: %v", err)
-		}
-	}()
-	// s.ListenAndServe()
-}
-
-
-func (s *Server) listenChanToQuit(f func(chan bool)) {
-	sigQuitChan := make(chan bool)
-	go f(sigQuitChan)
-	<-sigQuitChan
-	s.stop()
-}
-
-func (s *Server) stop() {
-	if err := s.Shutdown(context.Background()); err != nil {
-		log.Printf("HTTP server Shutdown: %v", err)
+	// Stop Server by print quit
+	// go func() {
+	if err := s.ListenAndServe(); err != http.ErrServerClosed {
+		log.Fatalf("HTTP server ListenAndServe: %v", err)
 	}
+	// }()
 }
 
+// Stop Server by print quit
+// func (s *Server) listenChanToQuit(f func(chan bool)) {
+// 	sigQuitChan := make(chan bool)
+// 	go f(sigQuitChan)
+// 	<-sigQuitChan
+// 	s.stop()
+// }
 
+// func (s *Server) stop() {
+// 	if err := s.Shutdown(context.Background()); err != nil {
+// 		log.Printf("HTTP server Shutdown: %v", err)
+// 	}
+// }
+
+// func scanQuit(ch chan bool) {
+// 	var inputText string
+// 	for strings.ToLower(inputText) != "quit" {
+// 		fmt.Println("For server stop please input: quit")
+// 		fmt.Scanf("%s\n", &inputText)
+// 	}
+// 	ch <- true
+// }
 
 func handlerUrlPost(repo Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -105,15 +112,6 @@ func handlerUrlGet(repo Repository) http.HandlerFunc {
 			w.WriteHeader(400)
 		}
 	}
-}
-
-func scanQuit(ch chan bool) {
-	var inputText string
-	for strings.ToLower(inputText) != "quit" {
-		fmt.Println("For server stop please input: quit")
-		fmt.Scanf("%s\n", &inputText)
-	}
-	ch <- true
 }
 
 func main() {
