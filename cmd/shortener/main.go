@@ -1,12 +1,12 @@
 package main
 
 import (
-	"repository"
-	"server"
+	"github.com/AlehaWP/YaPracticum.git/internal/repository"
+	"github.com/AlehaWP/YaPracticum.git/internal/server"
 )
 
 func main() {
-	s := new(Server)
-	urlData := make(UrlsData)
-	s.start("localhost:8080", &urlData)
+	s := new(server.Server)
+	urlData := make(repository.UrlsData)
+	s.Start("localhost:8080", &urlData)
 }

@@ -1,14 +1,14 @@
 package handlers
 
 import (
-	"context"
 	"io"
 	"net/http"
-	"repository"
+
+	"github.com/AlehaWP/YaPracticum.git/internal/repository"
 )
 
 // handlerUrlPost Saves url from request body to repository
-func handlerUrlPost(repo Repository) http.HandlerFunc {
+func HandlerUrlPost(repo repository.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		textBody, _ := io.ReadAll(r.Body)
 		defer r.Body.Close()
@@ -19,7 +19,7 @@ func handlerUrlPost(repo Repository) http.HandlerFunc {
 }
 
 // handlerUrlGet Returns url from repository to resp.Head - "Location"
-func handlerUrlGet(repo Repository) http.HandlerFunc {
+func HandlerUrlGet(repo repository.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		id := ctx.Value("id").(string)

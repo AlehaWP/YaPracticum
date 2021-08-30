@@ -3,6 +3,8 @@ package middlewares
 import (
 	"context"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 )
 
 // UrlCtx for parameter transfer without direct access to router

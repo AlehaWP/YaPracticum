@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"shorter"
+	"github.com/AlehaWP/YaPracticum.git/internal/shorter"
 )
 
 //Repository Interface bd urls
@@ -14,7 +14,7 @@ type Repository interface {
 type UrlsData map[string][]byte
 
 func (u *UrlsData) SaveURL(url []byte) string {
-	r := MD5(url)
+	r := shorter.MD5(url)
 	(*u)[r] = url
 	return r
 }

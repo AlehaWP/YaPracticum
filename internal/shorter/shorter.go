@@ -2,6 +2,7 @@ package shorter
 
 import (
 	"crypto/md5"
+	"fmt"
 )
 
 //MD5 func for hash.
