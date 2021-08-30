@@ -4,6 +4,8 @@ import (
 	"github.com/AlehaWP/YaPracticum.git/internal/shorter"
 )
 
+type Key string
+
 //Repository Interface bd urls
 type Repository interface {
 	GetURL(string) (string, bool)
