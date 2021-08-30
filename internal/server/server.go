@@ -1,7 +1,6 @@
 package server
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/AlehaWP/YaPracticum.git/internal/handlers"
@@ -24,7 +23,5 @@ func (s *Server) Start(addr string, repo repository.Repository) {
 	})
 	s.Addr = addr
 	s.Handler = r
-	if err := s.ListenAndServe(); err != http.ErrServerClosed {
-		log.Fatalf("HTTP server ListenAndServe: %v", err)
-	}
+	s.ListenAndServe()
 }

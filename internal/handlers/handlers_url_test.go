@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"io"
 	"log"
 	"net/http"
@@ -23,9 +24,9 @@ func (m *UrlsMock) SaveURL(url []byte) string {
 	return args.String(0)
 }
 
-func (m *UrlsMock) GetURL(id string) (string, bool) {
+func (m *UrlsMock) GetURL(id string) (string, error) {
 	args := m.Called(id)
-	return args.String(0), args.Bool(1)
+	return args.String(0), args.Error(1)
 }
 
 func TestHandlerUrlGet(t *testing.T) {
@@ -35,14 +36,13 @@ func TestHandlerUrlGet(t *testing.T) {
 			"result":      "www.example.com",
 			"resStatus":   307,
 			"mockReturn1": "www.example.com",
-			"mockReturn2": true,
 		},
 		"test2": {
 			"reqID":       "123123",
 			"result":      "",
 			"resStatus":   400,
 			"mockReturn1": "",
-			"mockReturn2": false,
+			"mockReturn2": errors.New("Not found"),
 		},
 	}
 
@@ -51,7 +51,11 @@ func TestHandlerUrlGet(t *testing.T) {
 
 	for key, value := range dataTests {
 		log.Println("start test", key)
-		repoMock.On("GetURL", value["reqID"].(string)).Return(value["mockReturn1"].(string), value["mockReturn2"].(bool))
+		var err error
+		if value["mockReturn2"] != nil {
+			err = value["mockReturn2"].(error)
+		}
+		repoMock.On("GetURL", value["reqID"].(string)).Return(value["mockReturn1"].(string), err)
 		r := httptest.NewRequest("GET", "/"+value["reqID"].(string), strings.NewReader(""))
 		w := httptest.NewRecorder()
 		ctx := context.WithValue(context.Background(), repository.Key("id"), value["reqID"].(string))

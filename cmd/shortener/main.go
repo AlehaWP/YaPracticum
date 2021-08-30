@@ -7,6 +7,6 @@ import (
 
 func main() {
 	s := new(server.Server)
-	urlData := make(repository.UrlsData)
-	s.Start("localhost:8080", &urlData)
+	urlRepo := make(repository.UrlRepo)
+	s.Start("localhost:8080", &urlRepo)
 }

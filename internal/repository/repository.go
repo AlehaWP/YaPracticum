@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"errors"
+
 	"github.com/AlehaWP/YaPracticum.git/internal/shorter"
 )
 
@@ -8,22 +10,22 @@ type Key string
 
 //Repository Interface bd urls
 type Repository interface {
-	GetURL(string) (string, bool)
+	GetURL(string) (string, error)
 	SaveURL([]byte) string
 }
 
 //UrlsData Repository of urls. Realize Repository interface
-type UrlsData map[string][]byte
+type UrlRepo map[string]string
 
-func (u *UrlsData) SaveURL(url []byte) string {
-	r := shorter.MD5(url)
-	(*u)[r] = url
+func (u *UrlRepo) SaveURL(url []byte) string {
+	r := shorter.MakeShortner(url)
+	(*u)[r] = string(url)
 	return r
 }
 
-func (u *UrlsData) GetURL(id string) (string, bool) {
+func (u *UrlRepo) GetURL(id string) (string, error) {
 	if r, ok := (*u)[id]; ok {
-		return string(r), true
+		return string(r), nil
 	}
-	return "", false
+	return "", errors.New("Not found")
 }

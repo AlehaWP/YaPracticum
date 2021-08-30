@@ -10,11 +10,16 @@ import (
 // handlerUrlPost Saves url from request body to repository
 func HandlerURLPost(repo repository.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		textBody, _ := io.ReadAll(r.Body)
+		textBody, err := io.ReadAll(r.Body)
 		defer r.Body.Close()
-		retURL := "http://" + r.Host + "/" + repo.SaveURL(textBody)
-		w.WriteHeader(201)
-		io.WriteString(w, retURL)
+		if err == nil {
+			retURL := "http://" + r.Host + "/" + repo.SaveURL(textBody)
+			w.WriteHeader(201)
+			io.WriteString(w, retURL)
+		} else {
+			w.WriteHeader(400)
+		}
+
 	}
 }
 
@@ -24,11 +29,12 @@ func HandlerURLGet(repo repository.Repository) http.HandlerFunc {
 		ctx := r.Context()
 
 		id := ctx.Value(repository.Key("id")).(string)
-		if val, ok := repo.GetURL(id); ok {
+		if val, err := repo.GetURL(id); err == nil {
 			w.Header().Add("Location", val)
 			w.WriteHeader(307)
 		} else {
 			w.WriteHeader(400)
+			io.WriteString(w, err.Error())
 		}
 	}
 }
