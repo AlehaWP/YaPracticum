@@ -1,0 +1,27 @@
+package repository
+
+import (
+	"shorter"
+)
+
+//Repository Interface bd urls
+type Repository interface {
+	GetURL(string) (string, bool)
+	SaveURL([]byte) string
+}
+
+//UrlsData Repository of urls. Realize Repository interface
+type UrlsData map[string][]byte
+
+func (u *UrlsData) SaveURL(url []byte) string {
+	r := MD5(url)
+	(*u)[r] = url
+	return r
+}
+
+func (u *UrlsData) GetURL(id string) (string, bool) {
+	if r, ok := (*u)[id]; ok {
+		return string(r), true
+	}
+	return "", false
+}
