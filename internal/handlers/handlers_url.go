@@ -8,18 +8,18 @@ import (
 )
 
 // handlerUrlPost Saves url from request body to repository
-func HandlerUrlPost(repo repository.Repository) http.HandlerFunc {
+func HandlerURLPost(repo repository.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		textBody, _ := io.ReadAll(r.Body)
 		defer r.Body.Close()
-		retUrl := "http://" + r.Host + "/" + repo.SaveURL(textBody)
+		retURL := "http://" + r.Host + "/" + repo.SaveURL(textBody)
 		w.WriteHeader(201)
-		io.WriteString(w, retUrl)
+		io.WriteString(w, retURL)
 	}
 }
 
 // handlerUrlGet Returns url from repository to resp.Head - "Location"
-func HandlerUrlGet(repo repository.Repository) http.HandlerFunc {
+func HandlerURLGet(repo repository.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		id := ctx.Value("id").(string)

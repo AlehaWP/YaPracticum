@@ -46,7 +46,7 @@ func TestHandlerUrlGet(t *testing.T) {
 	}
 
 	repoMock := new(UrlsMock)
-	handler := http.HandlerFunc(HandlerUrlGet(repoMock))
+	handler := http.HandlerFunc(HandlerURLGet(repoMock))
 
 	for key, value := range dataTests {
 		log.Println("start test", key)
@@ -57,19 +57,21 @@ func TestHandlerUrlGet(t *testing.T) {
 		handler.ServeHTTP(w, r.WithContext(ctx))
 		assert.Equal(t, value["resStatus"].(int), w.Result().StatusCode, "Не верный код ответа GET")
 		assert.Equal(t, w.Header().Get("Location"), value["result"].(string), "Не верный ответ GET")
+		defer r.Body.Close()
 	}
 }
 
 func TestHandlerUrlPost(t *testing.T) {
 	repoMock := UrlsMock{}
 	repoMock.On("SaveURL", []byte("www.example.com")).Return("123123asdasd")
-	handler := http.HandlerFunc(HandlerUrlPost(repoMock))
+	handler := http.HandlerFunc(HandlerURLPost(repoMock))
 	r := httptest.NewRequest("POST", "http://localhost:8082/", strings.NewReader("www.example.com"))
 	w := httptest.NewRecorder()
 	handler.ServeHTTP(w, r)
 	res := w.Result()
 	b, _ := io.ReadAll(res.Body)
-	defer res.Body.Close()
 	assert.Equal(t, 201, w.Result().StatusCode, "Не верный код ответа POST")
 	assert.Equal(t, "http://localhost:8082/123123asdasd", string(b), "Не верный ответ POST")
+
+	defer res.Body.Close()
 }

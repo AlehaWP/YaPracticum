@@ -17,10 +17,10 @@ type Server struct {
 //Start Server with router
 func (s *Server) Start(addr string, repo repository.Repository) {
 	r := chi.NewRouter()
-	r.Post("/", handlers.HandlerUrlPost(repo))
+	r.Post("/", handlers.HandlerURLPost(repo))
 	r.Route("/{id}", func(r chi.Router) {
-		r.Use(middlewares.UrlCtx)
-		r.Get("/", handlers.HandlerUrlGet(repo))
+		r.Use(middlewares.URLCtx)
+		r.Get("/", handlers.HandlerURLGet(repo))
 	})
 	s.Addr = addr
 	s.Handler = r
