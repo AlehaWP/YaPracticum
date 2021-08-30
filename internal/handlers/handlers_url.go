@@ -7,7 +7,7 @@ import (
 	"github.com/AlehaWP/YaPracticum.git/internal/repository"
 )
 
-// handlerUrlPost Saves url from request body to repository
+// HandlerUrlPost saves url from request body to repository.
 func HandlerURLPost(repo repository.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		textBody, err := io.ReadAll(r.Body)
@@ -23,7 +23,7 @@ func HandlerURLPost(repo repository.Repository) http.HandlerFunc {
 	}
 }
 
-// handlerUrlGet Returns url from repository to resp.Head - "Location"
+// HandlerUrlGet returns url from repository to resp.Head - "Location".
 func HandlerURLGet(repo repository.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()

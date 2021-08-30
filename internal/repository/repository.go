@@ -8,24 +8,24 @@ import (
 
 type Key string
 
-//Repository Interface bd urls
+//Repository interface repo urls.
 type Repository interface {
 	GetURL(string) (string, error)
 	SaveURL([]byte) string
 }
 
-//UrlsData Repository of urls. Realize Repository interface
-type UrlRepo map[string]string
+//UrlsData repository of urls. Realize Repository interface.
+type URLRepo map[string]string
 
-func (u *UrlRepo) SaveURL(url []byte) string {
+func (u *URLRepo) SaveURL(url []byte) string {
 	r := shorter.MakeShortner(url)
 	(*u)[r] = string(url)
 	return r
 }
 
-func (u *UrlRepo) GetURL(id string) (string, error) {
+func (u *URLRepo) GetURL(id string) (string, error) {
 	if r, ok := (*u)[id]; ok {
 		return string(r), nil
 	}
-	return "", errors.New("Not found")
+	return "", errors.New("not found")
 }

@@ -42,7 +42,7 @@ func TestHandlerUrlGet(t *testing.T) {
 			"result":      "",
 			"resStatus":   400,
 			"mockReturn1": "",
-			"mockReturn2": errors.New("Not found"),
+			"mockReturn2": errors.New("not found"),
 		},
 	}
 

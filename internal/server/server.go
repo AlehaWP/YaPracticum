@@ -13,7 +13,7 @@ type Server struct {
 	http.Server
 }
 
-//Start Server with router
+//Start server with router.
 func (s *Server) Start(addr string, repo repository.Repository) {
 	r := chi.NewRouter()
 	r.Post("/", handlers.HandlerURLPost(repo))
