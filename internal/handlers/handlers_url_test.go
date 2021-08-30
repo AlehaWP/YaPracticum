@@ -17,12 +17,12 @@ type UrlsMock struct {
 	mock.Mock
 }
 
-func (m UrlsMock) SaveURL(url []byte) string {
+func (m *UrlsMock) SaveURL(url []byte) string {
 	args := m.Called(url)
 	return args.String(0)
 }
 
-func (m UrlsMock) GetURL(id string) (string, bool) {
+func (m *UrlsMock) GetURL(id string) (string, bool) {
 	args := m.Called(id)
 	return args.String(0), args.Bool(1)
 }
@@ -55,9 +55,10 @@ func TestHandlerUrlGet(t *testing.T) {
 		w := httptest.NewRecorder()
 		ctx := context.WithValue(context.Background(), "id", value["reqID"].(string))
 		handler.ServeHTTP(w, r.WithContext(ctx))
-		assert.Equal(t, value["resStatus"].(int), w.Result().StatusCode, "Не верный код ответа GET")
+		res := w.Result()
+		assert.Equal(t, value["resStatus"].(int), res.StatusCode, "Не верный код ответа GET")
 		assert.Equal(t, w.Header().Get("Location"), value["result"].(string), "Не верный ответ GET")
-		defer w.Result().Body.Close()
+		defer res.Body.Close()
 	}
 }
 
