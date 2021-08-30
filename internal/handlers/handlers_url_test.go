@@ -57,12 +57,12 @@ func TestHandlerUrlGet(t *testing.T) {
 		handler.ServeHTTP(w, r.WithContext(ctx))
 		assert.Equal(t, value["resStatus"].(int), w.Result().StatusCode, "Не верный код ответа GET")
 		assert.Equal(t, w.Header().Get("Location"), value["result"].(string), "Не верный ответ GET")
-		defer r.Body.Close()
+		defer w.Result().Body.Close()
 	}
 }
 
 func TestHandlerUrlPost(t *testing.T) {
-	repoMock := UrlsMock{}
+	repoMock := new(UrlsMock)
 	repoMock.On("SaveURL", []byte("www.example.com")).Return("123123asdasd")
 	handler := http.HandlerFunc(HandlerURLPost(repoMock))
 	r := httptest.NewRequest("POST", "http://localhost:8082/", strings.NewReader("www.example.com"))
@@ -70,7 +70,7 @@ func TestHandlerUrlPost(t *testing.T) {
 	handler.ServeHTTP(w, r)
 	res := w.Result()
 	b, _ := io.ReadAll(res.Body)
-	assert.Equal(t, 201, w.Result().StatusCode, "Не верный код ответа POST")
+	assert.Equal(t, 201, res.StatusCode, "Не верный код ответа POST")
 	assert.Equal(t, "http://localhost:8082/123123asdasd", string(b), "Не верный ответ POST")
 
 	defer res.Body.Close()
