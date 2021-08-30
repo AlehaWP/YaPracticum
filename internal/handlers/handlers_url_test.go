@@ -53,7 +53,7 @@ func TestHandlerUrlGet(t *testing.T) {
 		repoMock.On("GetURL", value["reqID"].(string)).Return(value["mockReturn1"].(string), value["mockReturn2"].(bool))
 		r := httptest.NewRequest("GET", "/"+value["reqID"].(string), strings.NewReader(""))
 		w := httptest.NewRecorder()
-		ctx := context.WithValue(context.Background(), "id", value["reqID"].(string))
+		ctx := context.WithValue(context.Background(), string("id"), value["reqID"].(string))
 		handler.ServeHTTP(w, r.WithContext(ctx))
 		res := w.Result()
 		assert.Equal(t, value["resStatus"].(int), res.StatusCode, "Не верный код ответа GET")

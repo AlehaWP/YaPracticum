@@ -10,8 +10,7 @@ import (
 // UrlCtx for parameter transfer without direct access to router
 func URLCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		id := "id"
-		ctx := context.WithValue(r.Context(), id, chi.URLParam(r, id))
+		ctx := context.WithValue(r.Context(), string("id"), chi.URLParam(r, "id"))
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
