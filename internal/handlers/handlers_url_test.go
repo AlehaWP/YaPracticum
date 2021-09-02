@@ -76,8 +76,8 @@ func TestHandlerUrlPost(t *testing.T) {
 	handler.ServeHTTP(w, r)
 	res := w.Result()
 	b, _ := io.ReadAll(res.Body)
+	defer res.Body.Close()
 	assert.Equal(t, 201, res.StatusCode, "Не верный код ответа POST")
 	assert.Equal(t, "http://localhost:8082/123123asdasd", string(b), "Не верный ответ POST")
 
-	defer res.Body.Close()
 }
