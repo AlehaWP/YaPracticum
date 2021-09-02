@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"log"
@@ -79,5 +81,29 @@ func TestHandlerUrlPost(t *testing.T) {
 	defer res.Body.Close()
 	assert.Equal(t, 201, res.StatusCode, "Не верный код ответа POST")
 	assert.Equal(t, "http://localhost:8082/123123asdasd", string(b), "Не верный ответ POST")
+
+}
+
+func TestHandlerApiUrlPost(t *testing.T) {
+	str := &struct {
+		Url string
+	}{
+		Url: "www.example.com",
+	}
+	bOut, err := json.Marshal(str)
+	if err != nil {
+		t.Error("Ошибка серилизации")
+	}
+	repoMock := new(UrlsMock)
+	repoMock.On("SaveURL", []byte("www.example.com")).Return("123123asdasd")
+	handler := http.HandlerFunc(HandlerApiURLPost(repoMock))
+	r := httptest.NewRequest("POST", "http://localhost:8082/", bytes.NewBuffer(bOut))
+	w := httptest.NewRecorder()
+	handler.ServeHTTP(w, r)
+	res := w.Result()
+	b, _ := io.ReadAll(res.Body)
+	defer res.Body.Close()
+	assert.Equal(t, 201, res.StatusCode, "Не верный код ответа POST")
+	assert.Equal(t, `{"result":"http://localhost:8082/123123asdasd"}`, string(b), "Не верный ответ POST")
 
 }

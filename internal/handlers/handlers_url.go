@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 
@@ -20,6 +21,37 @@ func HandlerURLPost(repo repository.Repository) http.HandlerFunc {
 		w.WriteHeader(201)
 		io.WriteString(w, retURL)
 
+	}
+}
+
+func HandlerApiURLPost(repo repository.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		tURLJson := &struct {
+			URLLong string `json:"url"`
+		}{}
+		textBody, err := io.ReadAll(r.Body)
+		defer r.Body.Close()
+		if err != nil {
+			w.WriteHeader(400)
+			return
+		}
+		err = json.Unmarshal(textBody, tURLJson)
+		if err != nil {
+			w.WriteHeader(400)
+			return
+		}
+		tResJson := &struct {
+			URLShorten string `json:"result"`
+		}{
+			URLShorten: "http://" + r.Host + "/" + repo.SaveURL([]byte(tURLJson.URLLong)),
+		}
+		res, err := json.Marshal(tResJson)
+		if err != nil {
+			w.WriteHeader(400)
+			return
+		}
+		w.WriteHeader(201)
+		w.Write(res)
 	}
 }
 
