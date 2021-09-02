@@ -86,9 +86,9 @@ func TestHandlerUrlPost(t *testing.T) {
 
 func TestHandlerApiUrlPost(t *testing.T) {
 	str := &struct {
-		Url string
+		URL string
 	}{
-		Url: "www.example.com",
+		URL: "www.example.com",
 	}
 	bOut, err := json.Marshal(str)
 	if err != nil {
@@ -96,7 +96,7 @@ func TestHandlerApiUrlPost(t *testing.T) {
 	}
 	repoMock := new(UrlsMock)
 	repoMock.On("SaveURL", []byte("www.example.com")).Return("123123asdasd")
-	handler := http.HandlerFunc(HandlerApiURLPost(repoMock))
+	handler := http.HandlerFunc(HandlerAPIURLPost(repoMock))
 	r := httptest.NewRequest("POST", "http://localhost:8082/", bytes.NewBuffer(bOut))
 	w := httptest.NewRecorder()
 	handler.ServeHTTP(w, r)

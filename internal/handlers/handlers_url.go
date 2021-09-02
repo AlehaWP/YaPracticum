@@ -24,7 +24,7 @@ func HandlerURLPost(repo repository.Repository) http.HandlerFunc {
 	}
 }
 
-func HandlerApiURLPost(repo repository.Repository) http.HandlerFunc {
+func HandlerAPIURLPost(repo repository.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tURLJson := &struct {
 			URLLong string `json:"url"`
@@ -40,12 +40,12 @@ func HandlerApiURLPost(repo repository.Repository) http.HandlerFunc {
 			w.WriteHeader(400)
 			return
 		}
-		tResJson := &struct {
+		tResJSON := &struct {
 			URLShorten string `json:"result"`
 		}{
 			URLShorten: "http://" + r.Host + "/" + repo.SaveURL([]byte(tURLJson.URLLong)),
 		}
-		res, err := json.Marshal(tResJson)
+		res, err := json.Marshal(tResJSON)
 		if err != nil {
 			w.WriteHeader(400)
 			return
