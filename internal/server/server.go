@@ -21,7 +21,7 @@ func (s *Server) Start(addr string, repo repository.Repository) {
 		r.Use(middlewares.URLCtx)
 		r.Get("/", handlers.HandlerURLGet(repo))
 	})
-	r.Post("/api/shortner", handlers.HandlerAPIURLPost(repo))
+	r.Post("/api/shorten", handlers.HandlerAPIURLPost(repo))
 	s.Addr = addr
 	s.Handler = r
 	s.ListenAndServe()
