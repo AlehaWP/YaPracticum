@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/AlehaWP/YaPracticum.git/internal/projectenv"
 	"github.com/AlehaWP/YaPracticum.git/internal/repository"
 )
 
@@ -17,7 +18,7 @@ func HandlerURLPost(repo repository.Repository) http.HandlerFunc {
 			w.WriteHeader(400)
 			return
 		}
-		retURL := "http://" + r.Host + "/" + repo.SaveURL(textBody)
+		retURL := projectenv.Envs.BaseUrl + repo.SaveURL(textBody)
 		w.WriteHeader(201)
 		io.WriteString(w, retURL)
 
@@ -43,7 +44,7 @@ func HandlerAPIURLPost(repo repository.Repository) http.HandlerFunc {
 		tResJSON := &struct {
 			URLShorten string `json:"result"`
 		}{
-			URLShorten: "http://" + r.Host + "/" + repo.SaveURL([]byte(tURLJson.URLLong)),
+			URLShorten: projectenv.Envs.BaseUrl + repo.SaveURL([]byte(tURLJson.URLLong)),
 		}
 		res, err := json.Marshal(tResJSON)
 		if err != nil {

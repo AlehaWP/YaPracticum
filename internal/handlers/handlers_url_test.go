@@ -12,6 +12,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/AlehaWP/YaPracticum.git/internal/projectenv"
 	"github.com/AlehaWP/YaPracticum.git/internal/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -32,6 +33,7 @@ func (m *UrlsMock) GetURL(id string) (string, error) {
 }
 
 func TestHandlerUrlGet(t *testing.T) {
+	projectenv.Init()
 	dataTests := map[string]map[string]interface{}{
 		"test1": {
 			"reqID":       "123123asdasd",
@@ -70,21 +72,23 @@ func TestHandlerUrlGet(t *testing.T) {
 }
 
 func TestHandlerUrlPost(t *testing.T) {
+	projectenv.Init()
 	repoMock := new(UrlsMock)
 	repoMock.On("SaveURL", []byte("www.example.com")).Return("123123asdasd")
 	handler := http.HandlerFunc(HandlerURLPost(repoMock))
-	r := httptest.NewRequest("POST", "http://localhost:8082/", strings.NewReader("www.example.com"))
+	r := httptest.NewRequest("POST", "http://"+projectenv.Envs.ServAddr, strings.NewReader("www.example.com"))
 	w := httptest.NewRecorder()
 	handler.ServeHTTP(w, r)
 	res := w.Result()
 	b, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
 	assert.Equal(t, 201, res.StatusCode, "Не верный код ответа POST")
-	assert.Equal(t, "http://localhost:8082/123123asdasd", string(b), "Не верный ответ POST")
+	assert.Equal(t, "http://localhost:8080/123123asdasd", string(b), "Не верный ответ POST")
 
 }
 
 func TestHandlerApiUrlPost(t *testing.T) {
+	projectenv.Init()
 	str := &struct {
 		URL string
 	}{
@@ -97,13 +101,13 @@ func TestHandlerApiUrlPost(t *testing.T) {
 	repoMock := new(UrlsMock)
 	repoMock.On("SaveURL", []byte("www.example.com")).Return("123123asdasd")
 	handler := http.HandlerFunc(HandlerAPIURLPost(repoMock))
-	r := httptest.NewRequest("POST", "http://localhost:8082/", bytes.NewBuffer(bOut))
+	r := httptest.NewRequest("POST", "http://"+projectenv.Envs.ServAddr, bytes.NewBuffer(bOut))
 	w := httptest.NewRecorder()
 	handler.ServeHTTP(w, r)
 	res := w.Result()
 	b, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
 	assert.Equal(t, 201, res.StatusCode, "Не верный код ответа POST")
-	assert.Equal(t, `{"result":"http://localhost:8082/123123asdasd"}`, string(b), "Не верный ответ POST")
+	assert.Equal(t, `{"result":"http://localhost:8080/123123asdasd"}`, string(b), "Не верный ответ POST")
 
 }
