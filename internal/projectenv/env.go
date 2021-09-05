@@ -13,7 +13,7 @@ func (e *EnvVars) Get() {
 	err := env.Parse(e)
 	if err != nil || e.ServAddr == "" {
 		e.ServAddr = "localhost:8080"
-		e.BaseURL = "http://localhost:8080/"
+		e.BaseURL = "http://localhost:8080"
 	}
 }
 

@@ -18,7 +18,7 @@ func HandlerURLPost(repo repository.Repository) http.HandlerFunc {
 			w.WriteHeader(400)
 			return
 		}
-		retURL := projectenv.Envs.BaseURL + repo.SaveURL(textBody)
+		retURL := projectenv.Envs.BaseURL + "/" + repo.SaveURL(textBody)
 		w.WriteHeader(201)
 		io.WriteString(w, retURL)
 
@@ -44,7 +44,7 @@ func HandlerAPIURLPost(repo repository.Repository) http.HandlerFunc {
 		tResJSON := &struct {
 			URLShorten string `json:"result"`
 		}{
-			URLShorten: projectenv.Envs.BaseURL + repo.SaveURL([]byte(tURLJson.URLLong)),
+			URLShorten: projectenv.Envs.BaseURL + "/" + repo.SaveURL([]byte(tURLJson.URLLong)),
 		}
 		res, err := json.Marshal(tResJSON)
 		if err != nil {
