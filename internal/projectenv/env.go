@@ -6,14 +6,14 @@ import (
 
 type EnvVars struct {
 	ServAddr string `env:"SERVER_ADDRESS"`
-	BaseUrl  string `env:"BASE_URL"`
+	BaseURL  string `env:"BASE_URL"`
 }
 
 func (e *EnvVars) Get() {
 	err := env.Parse(e)
 	if err != nil || e.ServAddr == "" {
 		e.ServAddr = "localhost:8080"
-		e.BaseUrl = "http://localhost:8080/"
+		e.BaseURL = "http://localhost:8080/"
 	}
 }
 
