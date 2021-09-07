@@ -19,7 +19,7 @@ type writer struct {
 }
 
 func newWriter(fileName string) (*writer, error) {
-	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0777)
+	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777)
 	if err != nil {
 		return nil, errors.New("не удалось найти файл")
 	}
