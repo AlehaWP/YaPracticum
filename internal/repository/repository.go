@@ -8,6 +8,8 @@ import (
 
 type Key string
 
+var SerializeURLRepo func(*URLRepo)
+
 //Repository interface repo urls.
 type Repository interface {
 	GetURL(string) (string, error)

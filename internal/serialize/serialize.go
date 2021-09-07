@@ -59,7 +59,7 @@ func Init(fileName string) error {
 	return nil
 }
 
-func SaveURLSToFile(rep repository.URLRepo) {
+func SaveURLSToFile(rep *repository.URLRepo) {
 	w.encoder.Encode(rep)
 }
 

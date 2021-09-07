@@ -16,8 +16,9 @@ func main() {
 
 	urlRepo := make(repository.URLRepo)
 	serialize.ReadURLSFromFile(&urlRepo)
+	repository.SerializeURLRepo = serialize.SaveURLSToFile
 	s := new(server.Server)
 	s.Start(&urlRepo)
-	defer serialize.SaveURLSToFile(urlRepo)
+	defer serialize.SaveURLSToFile(&urlRepo)
 
 }
