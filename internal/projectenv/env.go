@@ -24,6 +24,6 @@ func (e *EnvVars) Get() {
 
 var Envs EnvVars
 
-func Init() {
+func init() {
 	Envs.Get()
 }

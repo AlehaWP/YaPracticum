@@ -3,8 +3,10 @@ package serialize
 import (
 	"encoding/gob"
 	"errors"
+	"fmt"
 	"os"
 
+	"github.com/AlehaWP/YaPracticum.git/internal/projectenv"
 	"github.com/AlehaWP/YaPracticum.git/internal/repository"
 )
 
@@ -23,6 +25,7 @@ func newWriter(fileName string) (*writer, error) {
 	if err != nil {
 		return nil, errors.New("не удалось найти файл")
 	}
+	defer file.Close()
 	return &writer{
 		file:    file,
 		encoder: gob.NewEncoder(file),
@@ -35,6 +38,7 @@ func newReader(fileName string) (*reader, error) {
 	if err != nil {
 		return nil, errors.New("не удалось найти файл")
 	}
+	defer file.Close()
 	return &reader{
 		file:    file,
 		decoder: gob.NewDecoder(file),
@@ -45,24 +49,22 @@ func newReader(fileName string) (*reader, error) {
 var w *writer
 var r *reader
 
-func Init(fileName string) error {
-	var err error
-	w, err = newWriter(fileName)
-	if err != nil {
-		return err
-	}
-	r, err = newReader(fileName)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func SaveURLSToFile(rep *repository.URLRepo) {
 	w.encoder.Encode(rep)
 }
 
 func ReadURLSFromFile(rep *repository.URLRepo) {
 	r.decoder.Decode(rep)
+}
+
+func init() {
+	var err error
+	w, err = newWriter(projectenv.Envs.OptionsFileName)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	r, err = newReader(projectenv.Envs.OptionsFileName)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 }

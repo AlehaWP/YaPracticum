@@ -33,7 +33,6 @@ func (m *UrlsMock) GetURL(id string) (string, error) {
 }
 
 func TestHandlerUrlGet(t *testing.T) {
-	projectenv.Init()
 	dataTests := map[string]map[string]interface{}{
 		"test1": {
 			"reqID":       "123123asdasd",
@@ -72,7 +71,6 @@ func TestHandlerUrlGet(t *testing.T) {
 }
 
 func TestHandlerUrlPost(t *testing.T) {
-	projectenv.Init()
 	repoMock := new(UrlsMock)
 	repoMock.On("SaveURL", []byte("www.example.com")).Return("123123asdasd")
 	handler := http.HandlerFunc(HandlerURLPost(repoMock))
@@ -88,7 +86,6 @@ func TestHandlerUrlPost(t *testing.T) {
 }
 
 func TestHandlerApiUrlPost(t *testing.T) {
-	projectenv.Init()
 	str := &struct {
 		URL string
 	}{
