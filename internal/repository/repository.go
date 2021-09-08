@@ -9,7 +9,6 @@ import (
 type Key string
 
 var SerializeURLRepo func(*URLRepo)
-var ReadURLRepoFromBD func(*URLRepo)
 
 //Repository interface repo urls.
 type Repository interface {
