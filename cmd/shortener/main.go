@@ -12,5 +12,4 @@ func main() {
 	repository.SerializeURLRepo = serialize.SaveURLSToFile
 	s := new(server.Server)
 	s.Start(&urlRepo)
-	defer serialize.SaveURLSToFile(&urlRepo)
 }

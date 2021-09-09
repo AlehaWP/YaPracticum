@@ -8,7 +8,7 @@ import (
 
 type Key string
 
-var SerializeURLRepo func(*URLRepo)
+var SerializeURLRepo func(URLRepo)
 
 //Repository interface repo urls.
 type Repository interface {
@@ -22,7 +22,7 @@ type URLRepo map[string]string
 func (u *URLRepo) SaveURL(url []byte) string {
 	r := shorter.MakeShortner(url)
 	(*u)[r] = string(url)
-	SerializeURLRepo(u)
+	SerializeURLRepo(*u)
 	return r
 }
 
