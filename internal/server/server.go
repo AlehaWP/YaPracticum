@@ -18,7 +18,6 @@ type Server struct {
 func (s *Server) Start(repo repository.Repository) {
 	r := chi.NewRouter()
 	r.Post("/", handlers.HandlerURLPost(repo))
-	//тут косяк
 	r.Route("/{id}", func(r chi.Router) {
 		r.Use(middlewares.URLCtx)
 		r.Get("/", handlers.HandlerURLGet(repo))

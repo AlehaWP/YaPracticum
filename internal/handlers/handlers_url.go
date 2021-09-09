@@ -19,6 +19,7 @@ func HandlerURLPost(repo repository.Repository) http.HandlerFunc {
 			return
 		}
 		retURL := projectenv.Envs.BaseURL + "/" + repo.SaveURL(textBody)
+		w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
 		w.WriteHeader(201)
 		io.WriteString(w, retURL)
 
@@ -51,6 +52,7 @@ func HandlerAPIURLPost(repo repository.Repository) http.HandlerFunc {
 			w.WriteHeader(400)
 			return
 		}
+		w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
 		w.WriteHeader(201)
 		w.Write(res)
 	}
@@ -69,6 +71,7 @@ func HandlerURLGet(repo repository.Repository) http.HandlerFunc {
 			return
 		}
 		w.Header().Add("Location", val)
+		w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
 		w.WriteHeader(307)
 	}
 }
