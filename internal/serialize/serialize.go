@@ -29,12 +29,11 @@ func (r *reader) Close() {
 }
 
 func newWriter(fileName string) (*writer, error) {
-	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, os.ModePerm)
+	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
 	file.Sync()
 	if err != nil {
 		return nil, errors.New("не удалось найти файл " + fileName)
 	}
-	defer file.Close()
 	return &writer{
 		file:    file,
 		encoder: gob.NewEncoder(file),
@@ -47,7 +46,6 @@ func newReader(fileName string) (*reader, error) {
 	if err != nil {
 		return nil, errors.New("не удалось найти файл " + fileName)
 	}
-	defer file.Close()
 	return &reader{
 		file:    file,
 		decoder: gob.NewDecoder(file),
@@ -65,21 +63,7 @@ func SaveURLSToFile(rep repository.URLRepo) {
 		fmt.Println(err.Error())
 	}
 	w.encoder.Encode(rep)
-
-	// var buffer bytes.Buffer
-	// gobEncoder := gob.NewEncoder(&buffer)
-
-	// gobEncoder.Encode(rep)
-	// fmt.Println(w.file.Name())
-	// n, _ := w.file.WriteString("тест")
-	// fmt.Println(n)
-
 	w.Close()
-
-	// gobDecoder := gob.NewDecoder(&buffer)
-	// gobEncoder.Encode(rep)
-	// gobDecoder.Decode(&rep)
-	// fmt.Println("Decode rep", rep)
 }
 
 func ReadURLSFromFile(rep *repository.URLRepo) {

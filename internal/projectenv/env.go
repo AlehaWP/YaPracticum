@@ -27,7 +27,7 @@ func (e *EnvVars) Get() {
 	}
 	if e.OptionsFileName == "" {
 		appDir, _ := os.Getwd()
-		e.OptionsFileName = appDir + `\local.db`
+		e.OptionsFileName = appDir + `\local.gob`
 	}
 }
 
