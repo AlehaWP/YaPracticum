@@ -3,6 +3,8 @@ package projectenv
 import (
 	"os"
 
+	"fmt"
+
 	"github.com/caarlos0/env/v6"
 )
 
@@ -14,9 +16,16 @@ type EnvVars struct {
 
 func (e *EnvVars) Get() {
 	err := env.Parse(e)
-	if err != nil || e.ServAddr == "" {
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	if e.ServAddr == "" {
 		e.ServAddr = "localhost:8080"
+	}
+	if e.BaseURL == "" {
 		e.BaseURL = "http://localhost:8080"
+	}
+	if e.OptionsFileName == "" {
 		appDir, _ := os.Getwd()
 		e.OptionsFileName = appDir + `\local.db`
 	}
