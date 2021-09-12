@@ -6,6 +6,7 @@ import (
 	"github.com/AlehaWP/YaPracticum.git/internal/server"
 )
 
+// Main.
 func main() {
 	urlRepo := make(repository.URLRepo)
 	serialize.ReadURLSFromFile(&urlRepo)
