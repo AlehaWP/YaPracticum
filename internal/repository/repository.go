@@ -36,3 +36,9 @@ func (u *URLRepo) Get() map[string]string {
 func (u *URLRepo) ToSet() *map[string]string {
 	return &u.data
 }
+
+func Init() *URLRepo {
+	return &URLRepo{
+		data: make(map[string]string),
+	}
+}
