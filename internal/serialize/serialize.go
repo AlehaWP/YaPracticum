@@ -69,6 +69,7 @@ func ReadURLSFromFile(rep *map[string]string) {
 	r.Close()
 }
 
+//InitSerialize init variables, that needed for package work.
 func InitSerialize(fileName string) {
 	var err error
 	fileNametoSave = fileName

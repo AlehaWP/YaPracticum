@@ -38,6 +38,7 @@ type EnvOptions struct {
 	RepoFileName string `env:"FILE_STORAGE_PATH"`
 }
 
+//CheckEnv for get options from env to default application options.
 func (d *defOptions) checkEnv() {
 
 	e := &EnvOptions{}
@@ -56,6 +57,7 @@ func (d *defOptions) checkEnv() {
 	}
 }
 
+//CheckFlags for get options from console to default application options.
 func (d *defOptions) checkFlags() {
 	appDir, _ := os.Getwd()
 	a := flag.String("a", "localhost:8080", "a server address string")
