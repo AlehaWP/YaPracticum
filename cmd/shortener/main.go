@@ -10,7 +10,7 @@ import (
 // Main.
 func main() {
 
-	opt := defoptions.NewdefOptions()
+	opt := defoptions.NewDefOptions()
 
 	urlRepo := repository.Init()
 

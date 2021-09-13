@@ -1,9 +1,9 @@
 package defoptions
 
 import (
-	"os"
-
+	"flag"
 	"fmt"
+	"os"
 
 	"github.com/caarlos0/env/v6"
 )
@@ -38,7 +38,7 @@ type EnvOptions struct {
 	RepoFileName string `env:"FILE_STORAGE_PATH"`
 }
 
-func (d *defOptions) tryGetFromEnv() {
+func (d *defOptions) checkEnv() {
 
 	e := &EnvOptions{}
 	err := env.Parse(e)
@@ -56,13 +56,20 @@ func (d *defOptions) tryGetFromEnv() {
 	}
 }
 
-func NewdefOptions() Options {
+func (d *defOptions) checkFlags() {
 	appDir, _ := os.Getwd()
-	opt := defOptions{
-		servAddr:     "localhost:8080",
-		baseURL:      "http://localhost:8080",
-		repoFileName: appDir + `\local.gob`,
-	}
-	opt.tryGetFromEnv()
+	a := flag.String("a", "localhost:8080", "a server address string")
+	b := flag.String("b", "http://localhost:8080", "a response address string")
+	f := flag.String("f", appDir+`\local.gob`, "a file storage path string")
+	flag.Parse()
+	d.servAddr = *a
+	d.baseURL = *b
+	d.repoFileName = *f
+}
+
+func NewDefOptions() Options {
+	opt := new(defOptions)
+	opt.checkFlags()
+	opt.checkEnv()
 	return opt
 }
