@@ -62,6 +62,5 @@ func NewdefOptions() Options {
 		repoFileName: appDir + `\local.gob`,
 	}
 	opt.tryGetFromEnv()
-	fmt.Println(opt.ServAddr())
 	return opt
 }
