@@ -15,9 +15,9 @@ type Options interface {
 }
 
 type defOptions struct {
-	servAddr     string `env:"SERVER_ADDRESS"`
-	baseURL      string `env:"BASE_URL"`
-	repoFileName string `env:"FILE_STORAGE_PATH"`
+	servAddr     string
+	baseURL      string
+	repoFileName string
 }
 
 func (d defOptions) ServAddr() string {
@@ -33,26 +33,34 @@ func (d defOptions) RepoFileName() string {
 }
 
 func (d *defOptions) tryGetFromEnv() {
-	err := env.Parse(d)
+	type EnvOptions struct {
+		ServAddr     string `env:"SERVER_ADDRESS"`
+		BaseURL      string `env:"BASE_URL"`
+		RepoFileName string `env:"FILE_STORAGE_PATH"`
+	}
+	e := new(EnvOptions)
+	err := env.Parse(e)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	if d.servAddr == "" {
-		d.servAddr = "localhost:8080"
+	if len(e.ServAddrgit) != 0 {
+		d.servAddr = e.ServAddr
 	}
-	if d.baseURL == "" {
-		d.baseURL = "http://localhost:8080"
+	if len(e.BaseURL) != 0 {
+		d.baseURL = e.BaseURL
 	}
-	if d.repoFileName == "" {
-		appDir, _ := os.Getwd()
-		d.repoFileName = appDir + `\local.gob`
+	if len(e.RepoFileName) != 0 {
+		d.repoFileName = e.RepoFileName
 	}
 }
 
 func NewdefOptions() Options {
-	var o defOptions
-	var oEnv defOptions
-	oEnv.tryGetFromEnv()
-	o = oEnv
-	return o
+	appDir, _ := os.Getwd()
+	opt := defOptions{
+		servAddr:     "localhost:8080",
+		baseURL:      "http:localhost:8080",
+		repoFileName: appDir + `\local.gob`,
+	}
+	opt.tryGetFromEnv()
+	return opt
 }
