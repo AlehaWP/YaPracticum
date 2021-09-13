@@ -38,12 +38,12 @@ func (d *defOptions) tryGetFromEnv() {
 		BaseURL      string `env:"BASE_URL"`
 		RepoFileName string `env:"FILE_STORAGE_PATH"`
 	}
-	e := new(EnvOptions)
+	e := &EnvOptions{}
 	err := env.Parse(e)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	if len(e.ServAddrgit) != 0 {
+	if len(e.ServAddr) != 0 {
 		d.servAddr = e.ServAddr
 	}
 	if len(e.BaseURL) != 0 {
@@ -62,5 +62,6 @@ func NewdefOptions() Options {
 		repoFileName: appDir + `\local.gob`,
 	}
 	opt.tryGetFromEnv()
+	fmt.Println(opt.ServAddr())
 	return opt
 }
