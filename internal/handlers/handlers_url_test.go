@@ -12,7 +12,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/AlehaWP/YaPracticum.git/internal/projectenv"
 	"github.com/AlehaWP/YaPracticum.git/internal/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -31,6 +30,26 @@ func (m *UrlsMock) GetURL(id string) (string, error) {
 	args := m.Called(id)
 	return args.String(0), args.Error(1)
 }
+
+/*type OptsMock struct {
+	mock.Mock
+}
+
+func (o *OptsMock) ServAddr() string{
+	args := o.Called()
+    return args.String()
+}
+
+func (o *OptsMock)  RespBaseURL() string{
+	args := o.Called()
+    return args.String()
+}
+
+func (o *OptsMock) RepoFileName() string{
+	args := o.Called()
+    return args.String()
+}
+*/
 
 func TestHandlerUrlGet(t *testing.T) {
 	dataTests := map[string]map[string]interface{}{
@@ -73,15 +92,15 @@ func TestHandlerUrlGet(t *testing.T) {
 func TestHandlerUrlPost(t *testing.T) {
 	repoMock := new(UrlsMock)
 	repoMock.On("SaveURL", []byte("www.example.com")).Return("123123asdasd")
-	handler := http.HandlerFunc(HandlerURLPost(repoMock))
-	r := httptest.NewRequest("POST", "http://"+projectenv.Envs.ServAddr, strings.NewReader("www.example.com"))
+	handler := http.HandlerFunc(HandlerURLPost(repoMock, "http://someurl"))
+	r := httptest.NewRequest("POST", "http://localhost:8080", strings.NewReader("www.example.com"))
 	w := httptest.NewRecorder()
 	handler.ServeHTTP(w, r)
 	res := w.Result()
 	b, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
 	assert.Equal(t, 201, res.StatusCode, "Не верный код ответа POST")
-	assert.Equal(t, "http://localhost:8080/123123asdasd", string(b), "Не верный ответ POST")
+	assert.Equal(t, "http://someurl/123123asdasd", string(b), "Не верный ответ POST")
 
 }
 
@@ -97,14 +116,14 @@ func TestHandlerApiUrlPost(t *testing.T) {
 	}
 	repoMock := new(UrlsMock)
 	repoMock.On("SaveURL", []byte("www.example.com")).Return("123123asdasd")
-	handler := http.HandlerFunc(HandlerAPIURLPost(repoMock))
-	r := httptest.NewRequest("POST", "http://"+projectenv.Envs.ServAddr, bytes.NewBuffer(bOut))
+	handler := http.HandlerFunc(HandlerAPIURLPost(repoMock, "http://someurl"))
+	r := httptest.NewRequest("POST", "http://localhost:8080", bytes.NewBuffer(bOut))
 	w := httptest.NewRecorder()
 	handler.ServeHTTP(w, r)
 	res := w.Result()
 	b, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
 	assert.Equal(t, 201, res.StatusCode, "Не верный код ответа POST")
-	assert.Equal(t, `{"result":"http://localhost:8080/123123asdasd"}`, string(b), "Не верный ответ POST")
+	assert.Equal(t, `{"result":"http://someurl/123123asdasd"}`, string(b), "Не верный ответ POST")
 
 }

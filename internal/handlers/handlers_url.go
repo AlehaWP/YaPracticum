@@ -5,12 +5,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/AlehaWP/YaPracticum.git/internal/projectenv"
+	"github.com/AlehaWP/YaPracticum.git/internal/global"
 	"github.com/AlehaWP/YaPracticum.git/internal/repository"
 )
 
 // HandlerUrlPost saves url from request body to repository.
-func HandlerURLPost(repo repository.Repository) http.HandlerFunc {
+func HandlerURLPost(repo global.Repository, baseURL string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		textBody, err := io.ReadAll(r.Body)
 		defer r.Body.Close()
@@ -18,7 +18,7 @@ func HandlerURLPost(repo repository.Repository) http.HandlerFunc {
 			w.WriteHeader(400)
 			return
 		}
-		retURL := projectenv.Envs.BaseURL + "/" + repo.SaveURL(textBody)
+		retURL := baseURL + "/" + repo.SaveURL(textBody)
 		w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
 		w.WriteHeader(201)
 		io.WriteString(w, retURL)
@@ -26,7 +26,8 @@ func HandlerURLPost(repo repository.Repository) http.HandlerFunc {
 	}
 }
 
-func HandlerAPIURLPost(repo repository.Repository) http.HandlerFunc {
+//HandlerAPIURLPost saves url from body request.
+func HandlerAPIURLPost(repo global.Repository, baseURL string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tURLJson := &struct {
 			URLLong string `json:"url"`
@@ -45,7 +46,7 @@ func HandlerAPIURLPost(repo repository.Repository) http.HandlerFunc {
 		tResJSON := &struct {
 			URLShorten string `json:"result"`
 		}{
-			URLShorten: projectenv.Envs.BaseURL + "/" + repo.SaveURL([]byte(tURLJson.URLLong)),
+			URLShorten: baseURL + "/" + repo.SaveURL([]byte(tURLJson.URLLong)),
 		}
 		res, err := json.Marshal(tResJSON)
 		if err != nil {
@@ -59,7 +60,7 @@ func HandlerAPIURLPost(repo repository.Repository) http.HandlerFunc {
 }
 
 // HandlerUrlGet returns url from repository to resp.Head - "Location".
-func HandlerURLGet(repo repository.Repository) http.HandlerFunc {
+func HandlerURLGet(repo global.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 

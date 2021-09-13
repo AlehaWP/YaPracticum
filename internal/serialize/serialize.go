@@ -5,9 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-
-	"github.com/AlehaWP/YaPracticum.git/internal/projectenv"
-	"github.com/AlehaWP/YaPracticum.git/internal/repository"
 )
 
 type reader struct {
@@ -55,10 +52,11 @@ func newReader(fileName string) (*reader, error) {
 
 var w *writer
 var r *reader
+var fileNametoSave string
 
-func SaveURLSToFile(rep repository.URLRepo) {
+func SaveURLSToFile(rep map[string]string) {
 	var err error
-	w, err = newWriter(projectenv.Envs.OptionsFileName)
+	w, err = newWriter(fileNametoSave)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -66,15 +64,15 @@ func SaveURLSToFile(rep repository.URLRepo) {
 	w.Close()
 }
 
-func ReadURLSFromFile(rep *repository.URLRepo) {
+func ReadURLSFromFile(rep *map[string]string) {
 	r.decoder.Decode(rep)
 	r.Close()
 }
 
-func init() {
+func InitSerialize(fileName string) {
 	var err error
-
-	r, err = newReader(projectenv.Envs.OptionsFileName)
+	fileNametoSave = fileName
+	r, err = newReader(fileName)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
