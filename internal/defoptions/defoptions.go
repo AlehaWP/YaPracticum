@@ -5,14 +5,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/AlehaWP/YaPracticum.git/internal/global"
 	"github.com/caarlos0/env/v6"
 )
-
-type Options interface {
-	ServAddr() string
-	RespBaseURL() string
-	RepoFileName() string
-}
 
 type defOptions struct {
 	servAddr     string
@@ -69,7 +64,8 @@ func (d *defOptions) checkFlags() {
 	d.repoFileName = *f
 }
 
-func NewDefOptions() Options {
+// NewDefOptions return obj like Options interfase.
+func NewDefOptions() global.Options {
 	opt := new(defOptions)
 	opt.checkFlags()
 	opt.checkEnv()

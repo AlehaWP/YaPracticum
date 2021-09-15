@@ -23,6 +23,7 @@ func (s *Server) Start(repo global.Repository, opt global.Options) {
 		r.Get("/", handlers.HandlerURLGet(repo))
 	})
 	r.Post("/api/shorten", handlers.HandlerAPIURLPost(repo, baseURL))
+
 	s.Addr = opt.ServAddr()
 	s.Handler = r
 	s.ListenAndServe()

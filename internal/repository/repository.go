@@ -37,6 +37,7 @@ func (u *URLRepo) ToSet() *map[string]string {
 	return &u.data
 }
 
+// Init return obj with alocate data.
 func Init() *URLRepo {
 	return &URLRepo{
 		data: make(map[string]string),

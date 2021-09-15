@@ -54,6 +54,7 @@ var w *writer
 var r *reader
 var fileNametoSave string
 
+// SaveURLSToFile save local db to file.
 func SaveURLSToFile(rep map[string]string) {
 	var err error
 	w, err = newWriter(fileNametoSave)
@@ -64,6 +65,7 @@ func SaveURLSToFile(rep map[string]string) {
 	w.Close()
 }
 
+// ReadURLSFromFile read from local file to local base.
 func ReadURLSFromFile(rep *map[string]string) {
 	r.decoder.Decode(rep)
 	r.Close()

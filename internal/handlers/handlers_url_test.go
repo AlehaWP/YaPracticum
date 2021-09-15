@@ -82,6 +82,7 @@ func TestHandlerUrlGet(t *testing.T) {
 		w := httptest.NewRecorder()
 		ctx := context.WithValue(context.Background(), repository.Key("id"), value["reqID"].(string))
 		handler.ServeHTTP(w, r.WithContext(ctx))
+
 		res := w.Result()
 		assert.Equal(t, value["resStatus"].(int), res.StatusCode, "Не верный код ответа GET")
 		assert.Equal(t, w.Header().Get("Location"), value["result"].(string), "Не верный ответ GET")
