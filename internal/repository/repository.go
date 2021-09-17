@@ -39,7 +39,7 @@ func (u *URLRepo) ToSet() *map[string]string {
 }
 
 // NewUrlRepo return obj with alocate data.
-func NewUrlRepo() *URLRepo {
+func NewURLRepo() *URLRepo {
 	return &URLRepo{
 		data: make(map[string]string),
 	}

@@ -59,7 +59,7 @@ func (d *defOptions) setFlags() {
 		fmt.Println("Не удалось найти каталог программы!")
 	}
 	flag.StringVar(&d.servAddr, "a", "localhost:8080", "a server address string")
-	flag.CommandLine.StringVar(&d.repoFileName, "b", "http://localhost:8080", "a response address string")
+	flag.StringVar(&d.baseURL, "b", "http://localhost:8080", "a response address string")
 	flag.StringVar(&d.repoFileName, "f", appDir+`\local.gob`, "a file storage path string")
 	flag.Parse()
 }
