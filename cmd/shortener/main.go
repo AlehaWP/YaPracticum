@@ -14,7 +14,7 @@ func main() {
 
 	urlRepo := repository.NewUrlRepo()
 
-	serialize.InitSerialize(opt.RepoFileName())
+	serialize.NewSerialize(opt.RepoFileName())
 	serialize.ReadURLSFromFile(urlRepo)
 	repository.SerializeURLRepo = serialize.SaveURLSToFile
 
