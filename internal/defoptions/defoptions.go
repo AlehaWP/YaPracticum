@@ -54,10 +54,10 @@ func (d *defOptions) checkEnv() {
 
 //setFlags for get options from console to default application options.
 func (d *defOptions) setFlags() {
-	appDir, err := os.Getwd()
-	if err != nil {
-		fmt.Println("Не удалось найти каталог программы!")
-	}
+	appDir, _ := os.Getwd()
+	// if err != nil {
+	// 	fmt.Println("Не удалось найти каталог программы!")
+	// }
 	flag.StringVar(&d.servAddr, "a", "localhost:8080", "a server address string")
 	flag.StringVar(&d.baseURL, "b", "http://localhost:8080", "a response address string")
 	flag.StringVar(&d.repoFileName, "f", appDir+`\local.gob`, "a file storage path string")
