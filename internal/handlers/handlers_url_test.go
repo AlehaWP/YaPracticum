@@ -31,6 +31,14 @@ func (m *UrlsMock) GetURL(id string) (string, error) {
 	return args.String(0), args.Error(1)
 }
 
+func (m *UrlsMock) Get() map[string]string {
+	return nil
+}
+
+func (m *UrlsMock) ToSet() *map[string]string {
+	return nil
+}
+
 /*type OptsMock struct {
 	mock.Mock
 }

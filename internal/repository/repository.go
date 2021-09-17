@@ -3,12 +3,13 @@ package repository
 import (
 	"errors"
 
+	"github.com/AlehaWP/YaPracticum.git/internal/global"
 	"github.com/AlehaWP/YaPracticum.git/internal/shorter"
 )
 
 type Key string
 
-var SerializeURLRepo func(map[string]string)
+var SerializeURLRepo func(global.Repository)
 
 //UrlsData repository of urls. Realize Repository interface.
 type URLRepo struct {
@@ -18,7 +19,7 @@ type URLRepo struct {
 func (u *URLRepo) SaveURL(url []byte) string {
 	r := shorter.MakeShortner(url)
 	(*u).data[r] = string(url)
-	SerializeURLRepo(u.Get())
+	SerializeURLRepo(u)
 	return r
 }
 
@@ -37,8 +38,8 @@ func (u *URLRepo) ToSet() *map[string]string {
 	return &u.data
 }
 
-// Init return obj with alocate data.
-func Init() *URLRepo {
+// NewUrlRepo return obj with alocate data.
+func NewUrlRepo() *URLRepo {
 	return &URLRepo{
 		data: make(map[string]string),
 	}

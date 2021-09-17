@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+
+	"github.com/AlehaWP/YaPracticum.git/internal/global"
 )
 
 type reader struct {
@@ -55,24 +57,24 @@ var r *reader
 var fileNametoSave string
 
 // SaveURLSToFile save local db to file.
-func SaveURLSToFile(rep map[string]string) {
+func SaveURLSToFile(rep global.Repository) {
 	var err error
 	w, err = newWriter(fileNametoSave)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	w.encoder.Encode(rep)
+	w.encoder.Encode(rep.Get())
 	w.Close()
 }
 
 // ReadURLSFromFile read from local file to local base.
-func ReadURLSFromFile(rep *map[string]string) {
-	r.decoder.Decode(rep)
+func ReadURLSFromFile(rep global.Repository) {
+	r.decoder.Decode(rep.ToSet())
 	r.Close()
 }
 
-//InitSerialize init variables, that needed for package work.
-func InitSerialize(fileName string) {
+//NewSerialize init variables, that needed for package work.
+func NewSerialize(fileName string) {
 	var err error
 	fileNametoSave = fileName
 	r, err = newReader(fileName)
