@@ -1,5 +1,6 @@
 package global
 
+//Options interface for program options.
 type Options interface {
 	ServAddr() string
 	RespBaseURL() string
@@ -10,4 +11,6 @@ type Options interface {
 type Repository interface {
 	GetURL(string) (string, error)
 	SaveURL([]byte) string
+	Get() map[string]string
+	ToSet() *map[string]string
 }

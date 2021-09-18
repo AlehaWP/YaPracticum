@@ -48,6 +48,7 @@ func HandlerAPIURLPost(repo global.Repository, baseURL string) http.HandlerFunc 
 		}{
 			URLShorten: baseURL + "/" + repo.SaveURL([]byte(tURLJson.URLLong)),
 		}
+
 		res, err := json.Marshal(tResJSON)
 		if err != nil {
 			w.WriteHeader(400)

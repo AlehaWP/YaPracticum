@@ -12,12 +12,12 @@ func main() {
 
 	opt := defoptions.NewDefOptions()
 
-	urlRepo := repository.Init()
+	urlRepo := repository.NewURLRepo()
 
-	serialize.InitSerialize(opt.RepoFileName())
-	serialize.ReadURLSFromFile(urlRepo.ToSet())
-
+	serialize.NewSerialize(opt.RepoFileName())
+	serialize.ReadURLSFromFile(urlRepo)
 	repository.SerializeURLRepo = serialize.SaveURLSToFile
+
 	s := new(server.Server)
 	s.Start(urlRepo, opt)
 }

@@ -5,14 +5,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/AlehaWP/YaPracticum.git/internal/global"
 	"github.com/caarlos0/env/v6"
 )
-
-type Options interface {
-	ServAddr() string
-	RespBaseURL() string
-	RepoFileName() string
-}
 
 type defOptions struct {
 	servAddr     string
@@ -38,6 +33,7 @@ type EnvOptions struct {
 	RepoFileName string `env:"FILE_STORAGE_PATH"`
 }
 
+//checkEnv for get options from env to default application options.
 func (d *defOptions) checkEnv() {
 
 	e := &EnvOptions{}
@@ -56,20 +52,22 @@ func (d *defOptions) checkEnv() {
 	}
 }
 
-func (d *defOptions) checkFlags() {
-	appDir, _ := os.Getwd()
-	a := flag.String("a", "localhost:8080", "a server address string")
-	b := flag.String("b", "http://localhost:8080", "a response address string")
-	f := flag.String("f", appDir+`\local.gob`, "a file storage path string")
+//setFlags for get options from console to default application options.
+func (d *defOptions) setFlags() {
+	appDir, err := os.Getwd()
+	if err != nil {
+		fmt.Println("Не удалось найти каталог программы!")
+	}
+	flag.StringVar(&d.servAddr, "a", "localhost:8080", "a server address string")
+	flag.StringVar(&d.baseURL, "b", "http://localhost:8080", "a response address string")
+	flag.StringVar(&d.repoFileName, "f", appDir+`/local.gob`, "a file storage path string")
 	flag.Parse()
-	d.servAddr = *a
-	d.baseURL = *b
-	d.repoFileName = *f
 }
 
-func NewDefOptions() Options {
+// NewDefOptions return obj like Options interfase.
+func NewDefOptions() global.Options {
 	opt := new(defOptions)
-	opt.checkFlags()
+	opt.setFlags()
 	opt.checkEnv()
 	return opt
 }
