@@ -18,7 +18,7 @@ type Server struct {
 func (s *Server) Start(repo global.Repository, opt global.Options) {
 	r := chi.NewRouter()
 	baseURL := opt.RespBaseURL()
-	r.Post("/", handlers.HandlerURLPost(repo, baseURL))
+	r.Post("/", zip.ZipHandlerRead(zip.ZipHandlerWrite(handlers.HandlerURLPost(repo, baseURL))))
 	r.Route("/{id}", func(r chi.Router) {
 		r.Use(middlewares.URLCtx)
 		r.Get("/", handlers.HandlerURLGet(repo))

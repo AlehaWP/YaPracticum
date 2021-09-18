@@ -21,7 +21,7 @@ func HandlerURLPost(repo global.Repository, baseURL string) http.HandlerFunc {
 		retURL := baseURL + "/" + repo.SaveURL(textBody)
 		w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
 		w.WriteHeader(201)
-		io.WriteString(w, retURL)
+		w.Write([]byte(retURL))
 
 	}
 }
