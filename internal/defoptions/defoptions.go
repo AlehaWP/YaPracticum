@@ -1,6 +1,7 @@
 package defoptions
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -50,6 +51,8 @@ func (d *defOptions) checkEnv() {
 	if len(e.RepoFileName) != 0 {
 		d.repoFileName = e.RepoFileName
 	}
+
+	errors.New(d.repoFileName)
 }
 
 //setFlags for get options from console to default application options.
