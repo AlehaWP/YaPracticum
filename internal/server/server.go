@@ -6,6 +6,7 @@ import (
 	"github.com/AlehaWP/YaPracticum.git/internal/global"
 	"github.com/AlehaWP/YaPracticum.git/internal/handlers"
 	"github.com/AlehaWP/YaPracticum.git/internal/middlewares"
+	"github.com/AlehaWP/YaPracticum.git/internal/zip"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -22,7 +23,7 @@ func (s *Server) Start(repo global.Repository, opt global.Options) {
 		r.Use(middlewares.URLCtx)
 		r.Get("/", handlers.HandlerURLGet(repo))
 	})
-	r.Post("/api/shorten", handlers.HandlerAPIURLPost(repo, baseURL))
+	r.Post("/api/shorten", zip.ZipHandlerRead(zip.ZipHandlerWrite(handlers.HandlerAPIURLPost(repo, baseURL))))
 
 	s.Addr = opt.ServAddr()
 	s.Handler = r
