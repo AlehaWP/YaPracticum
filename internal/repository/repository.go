@@ -44,3 +44,19 @@ func NewURLRepo() *URLRepo {
 		data: make(map[string]string),
 	}
 }
+
+type UsersRepo struct {
+	data      map[string]int
+	currentID int
+}
+
+func (u *UsersRepo) getID() int {
+	u.currentID += 1
+	return u.currentID
+}
+
+func (u *UsersRepo) Set() string {
+	id := u.getID()
+	return ""
+
+}
