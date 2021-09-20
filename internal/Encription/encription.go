@@ -31,6 +31,6 @@ func EncriptInt(s int) (string, error) {
 	res := make([]byte, aesblock.BlockSize())
 	aesblock.Encrypt(res, []byte(strconv.Itoa(31415926)))
 
-	return "", nil
+	return string(res), nil
 
 }

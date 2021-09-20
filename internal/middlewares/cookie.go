@@ -16,11 +16,11 @@ func SetCookieUser(next http.HandlerFunc) http.HandlerFunc {
 		}
 		if _, ok := repository.FindUser(cv); !ok {
 			cv, err = repository.CreateUser()
-		}
-		if err != nil {
-			fmt.Println("Can't create cookie", err)
-			next.ServeHTTP(w, r)
-			return
+			if err != nil {
+				fmt.Println("Can't create cookie", err)
+				next.ServeHTTP(w, r)
+				return
+			}
 		}
 
 		fmt.Println(cv)
