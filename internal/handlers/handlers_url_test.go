@@ -12,6 +12,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/AlehaWP/YaPracticum.git/internal/global"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -97,7 +98,7 @@ func TestHandlerUrlGet(t *testing.T) {
 		repoMock.On("GetURL", value["reqID"].(string)).Return(value["mockReturn1"].(string), err)
 		r := httptest.NewRequest("GET", "/"+value["reqID"].(string), strings.NewReader(""))
 		w := httptest.NewRecorder()
-		ctx := context.WithValue(context.Background(), "url_id", value["reqID"].(string))
+		ctx := context.WithValue(context.Background(), global.CtxString("url_id"), value["reqID"].(string))
 		handler.ServeHTTP(w, r.WithContext(ctx))
 
 		res := w.Result()

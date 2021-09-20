@@ -33,7 +33,7 @@ func SetCookieUser(next http.Handler) http.Handler {
 		}
 		http.SetCookie(w, c)
 
-		ctx := context.WithValue(r.Context(), "userId", cv)
+		ctx := context.WithValue(r.Context(), global.CtxString("userId"), cv)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
