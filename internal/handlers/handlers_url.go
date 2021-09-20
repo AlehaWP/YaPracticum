@@ -13,7 +13,7 @@ var BaseURL string
 
 func HandlerUserPostURLs(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	userID := ctx.Value(global.CtxString("userId")).(string)
+	userID := ctx.Value(global.CtxString("UserID")).(string)
 
 	ud := Repo.GetUserURLs(userID)
 
@@ -36,7 +36,7 @@ func HandlerUserPostURLs(w http.ResponseWriter, r *http.Request) {
 // HandlerUrlPost saves url from request body to repository.
 func HandlerURLPost(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	userID := ctx.Value(global.CtxString("userId")).(string)
+	userID := ctx.Value(global.CtxString("UserID")).(string)
 
 	textBody, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -55,7 +55,7 @@ func HandlerURLPost(w http.ResponseWriter, r *http.Request) {
 func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	userID := ctx.Value(global.CtxString("userId")).(string)
+	userID := ctx.Value(global.CtxString("UserID")).(string)
 
 	tURLJson := &struct {
 		URLLong string `json:"url"`

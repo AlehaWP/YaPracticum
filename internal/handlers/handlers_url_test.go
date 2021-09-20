@@ -114,13 +114,16 @@ func TestHandlerUrlGet(t *testing.T) {
 
 func TestHandlerUrlPost(t *testing.T) {
 	repoMock := new(UrlsMock)
-	repoMock.On("SaveURL", []byte("www.example.com"), "http://baseURL/", "").Return("http://baseURL/123123asdasd")
+	repoMock.On("SaveURL", []byte("www.example.com"), "http://baseURL/", "asdasd").Return("http://baseURL/123123asdasd")
 
 	NewHandlers(repoMock, "http://baseURL")
 	handler := http.HandlerFunc(HandlerURLPost)
 	r := httptest.NewRequest("POST", "http://localhost:8080", strings.NewReader("www.example.com"))
 	w := httptest.NewRecorder()
-	handler.ServeHTTP(w, r)
+
+	ctx := context.WithValue(context.Background(), global.CtxString("UserID"), "asdasd")
+	handler.ServeHTTP(w, r.WithContext(ctx))
+
 	res := w.Result()
 	b, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
@@ -140,12 +143,14 @@ func TestHandlerApiUrlPost(t *testing.T) {
 		t.Error("Ошибка серилизации")
 	}
 	repoMock := new(UrlsMock)
-	repoMock.On("SaveURL", []byte("www.example.com"), "http://baseURL/", "").Return("http://baseURL/123123asdasd")
+	repoMock.On("SaveURL", []byte("www.example.com"), "http://baseURL/", "aasdasdSQW").Return("http://baseURL/123123asdasd")
 	NewHandlers(repoMock, "http://baseURL")
 	handler := http.HandlerFunc(HandlerAPIURLPost)
 	r := httptest.NewRequest("POST", "http://localhost:8080", bytes.NewBuffer(bOut))
 	w := httptest.NewRecorder()
-	handler.ServeHTTP(w, r)
+
+	ctx := context.WithValue(context.Background(), global.CtxString("UserID"), "aasdasdSQW")
+	handler.ServeHTTP(w, r.WithContext(ctx))
 	res := w.Result()
 	b, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()

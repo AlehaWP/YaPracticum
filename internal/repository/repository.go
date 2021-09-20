@@ -39,7 +39,7 @@ func (s *ServerRepo) GetURL(id string) (string, error) {
 
 func (s *ServerRepo) GetUserURLs(userID string) []global.URLs {
 	ud := s.URLsData
-	m := make([]global.URLs, 0, 0)
+	m := make([]global.URLs, 0)
 	for key, value := range ud {
 		if value[2] == userID {
 			m = append(m, global.URLs{
