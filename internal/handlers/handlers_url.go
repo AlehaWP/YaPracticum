@@ -62,7 +62,7 @@ func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
 func HandlerURLGet(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	id := ctx.Value(string("url_id")).(string)
+	id := ctx.Value("url_id").(string)
 	val, err := Repo.GetURL(id)
 	if err != nil {
 		w.WriteHeader(400)

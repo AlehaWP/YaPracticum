@@ -1,5 +1,7 @@
 package global
 
+type CtxString string
+
 type Urls struct {
 	url    string
 	userID int
