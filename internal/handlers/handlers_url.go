@@ -28,7 +28,7 @@ func HandlerUserPostURLs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
+	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(200)
 	w.Write(res)
 }
