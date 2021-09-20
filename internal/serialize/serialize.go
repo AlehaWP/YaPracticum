@@ -69,9 +69,7 @@ func SaveRepoToFile(rep global.Repository) {
 
 // ReadURLSFromFile read from local file to local base.
 func ReadRepoFromFile(rep global.Repository) {
-	fmt.Println(rep)
 	r.decoder.Decode(rep)
-	fmt.Println(rep)
 	r.Close()
 }
 
