@@ -16,6 +16,6 @@ type Options interface {
 type Repository interface {
 	GetURL(string) (string, error)
 	SaveURL([]byte, string) string
-	Get() map[string][]string
-	ToSet() *map[string][]string
+	FindUser(string) bool
+	CreateUser() (string, error)
 }

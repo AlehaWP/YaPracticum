@@ -57,19 +57,21 @@ var r *reader
 var fileNametoSave string
 
 // SaveURLSToFile save local db to file.
-func SaveURLSToFile(rep global.Repository) {
+func SaveRepoToFile(rep global.Repository) {
 	var err error
 	w, err = newWriter(fileNametoSave)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	w.encoder.Encode(rep.Get())
+	w.encoder.Encode(rep)
 	w.Close()
 }
 
 // ReadURLSFromFile read from local file to local base.
-func ReadURLSFromFile(rep global.Repository) {
-	r.decoder.Decode(rep.ToSet())
+func ReadRepoFromFile(rep global.Repository) {
+	fmt.Println(rep)
+	r.decoder.Decode(rep)
+	fmt.Println(rep)
 	r.Close()
 }
 

@@ -12,7 +12,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/AlehaWP/YaPracticum.git/internal/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -31,12 +30,20 @@ func (m *UrlsMock) GetURL(id string) (string, error) {
 	return args.String(0), args.Error(1)
 }
 
-func (m *UrlsMock) Get() map[string][]string {
-	return nil
+// func (m *UrlsMock) Get() map[string][]string {
+// 	return nil
+// }
+
+// func (m *UrlsMock) ToSet() *map[string][]string {
+// 	return nil
+// }
+
+func (m *UrlsMock) FindUser(string) bool {
+	return false
 }
 
-func (m *UrlsMock) ToSet() *map[string][]string {
-	return nil
+func (m *UrlsMock) CreateUser() (string, error) {
+	return "", nil
 }
 
 /*type OptsMock struct {
@@ -77,7 +84,9 @@ func TestHandlerUrlGet(t *testing.T) {
 	}
 
 	repoMock := new(UrlsMock)
-	handler := http.HandlerFunc(HandlerURLGet(repoMock))
+
+	NewHandlers(repoMock, "http://someurl")
+	handler := http.HandlerFunc(HandlerURLGet)
 
 	for key, value := range dataTests {
 		log.Println("start test", key)
@@ -88,7 +97,7 @@ func TestHandlerUrlGet(t *testing.T) {
 		repoMock.On("GetURL", value["reqID"].(string)).Return(value["mockReturn1"].(string), err)
 		r := httptest.NewRequest("GET", "/"+value["reqID"].(string), strings.NewReader(""))
 		w := httptest.NewRecorder()
-		ctx := context.WithValue(context.Background(), repository.Key("id"), value["reqID"].(string))
+		ctx := context.WithValue(context.Background(), string("url_id"), value["reqID"].(string))
 		handler.ServeHTTP(w, r.WithContext(ctx))
 
 		res := w.Result()
@@ -101,7 +110,9 @@ func TestHandlerUrlGet(t *testing.T) {
 func TestHandlerUrlPost(t *testing.T) {
 	repoMock := new(UrlsMock)
 	repoMock.On("SaveURL", []byte("www.example.com"), "").Return("123123asdasd")
-	handler := http.HandlerFunc(HandlerURLPost(repoMock, "http://someurl"))
+
+	NewHandlers(repoMock, "http://someurl")
+	handler := http.HandlerFunc(HandlerURLPost)
 	r := httptest.NewRequest("POST", "http://localhost:8080", strings.NewReader("www.example.com"))
 	w := httptest.NewRecorder()
 	handler.ServeHTTP(w, r)
@@ -125,7 +136,8 @@ func TestHandlerApiUrlPost(t *testing.T) {
 	}
 	repoMock := new(UrlsMock)
 	repoMock.On("SaveURL", []byte("www.example.com"), "").Return("123123asdasd")
-	handler := http.HandlerFunc(HandlerAPIURLPost(repoMock, "http://someurl"))
+	NewHandlers(repoMock, "http://someurl")
+	handler := http.HandlerFunc(HandlerAPIURLPost)
 	r := httptest.NewRequest("POST", "http://localhost:8080", bytes.NewBuffer(bOut))
 	w := httptest.NewRecorder()
 	handler.ServeHTTP(w, r)

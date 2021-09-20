@@ -1,21 +1,25 @@
 package middlewares
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
-	"github.com/AlehaWP/YaPracticum.git/internal/repository"
+	"github.com/AlehaWP/YaPracticum.git/internal/global"
 )
 
-func SetCookieUser(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+var Repo global.Repository
+
+func SetCookieUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c, err := r.Cookie("UserID")
 		cv := ""
 		if err == nil {
 			cv = c.Value
 		}
-		if _, ok := repository.FindUser(cv); !ok {
-			cv, err = repository.CreateUser()
+
+		if ok := Repo.FindUser(cv); !ok {
+			cv, err = Repo.CreateUser()
 			if err != nil {
 				fmt.Println("Can't create cookie", err)
 				next.ServeHTTP(w, r)
@@ -23,10 +27,17 @@ func SetCookieUser(next http.HandlerFunc) http.HandlerFunc {
 			}
 		}
 
-		fmt.Println(cv)
-		c.Name = "UserID"
-		c.Value = cv
+		c = &http.Cookie{
+			Name:  "UserID",
+			Value: cv,
+		}
 		http.SetCookie(w, c)
-		next.ServeHTTP(w, r)
-	}
+
+		ctx := context.WithValue(r.Context(), string("userId"), cv)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func NewCookie(repo global.Repository) {
+	Repo = repo
 }

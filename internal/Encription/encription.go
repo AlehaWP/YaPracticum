@@ -2,7 +2,9 @@ package encription
 
 import (
 	"crypto/aes"
+	"crypto/md5"
 	"crypto/rand"
+	"fmt"
 	"strconv"
 )
 
@@ -17,8 +19,10 @@ func generateRandom(size int) ([]byte, error) {
 	return b, nil
 }
 
-func EncriptInt(s int) (string, error) {
-	key, err := generateRandom(keySize)
+func EncriptInt(i int) (string, error) {
+	key, err := generateRandom(aes.BlockSize)
+	fmt.Println("keySize : ", keySize)
+	fmt.Println("key : ", key)
 	if err != nil {
 		return "", err
 	}
@@ -27,10 +31,15 @@ func EncriptInt(s int) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	fmt.Println("BlockSize : ", aesblock.BlockSize())
 
 	res := make([]byte, aesblock.BlockSize())
-	aesblock.Encrypt(res, []byte(strconv.Itoa(31415926)))
+	fmt.Println("i : ", i)
+	fmt.Println("res : ", res)
+	hash := md5.Sum([]byte(strconv.Itoa(i)))
+	aesblock.Encrypt(res, hash[:])
+	fmt.Printf("encrypted: %q\n", res)
 
-	return string(res), nil
+	return fmt.Sprintf("%x", res), nil
 
 }

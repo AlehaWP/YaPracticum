@@ -16,8 +16,8 @@ func (w zipWriter) Write(b []byte) (int, error) {
 	return w.Writer.Write(b)
 }
 
-func ZipHandlerWrite(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func ZipHandlerWrite(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
 			next.ServeHTTP(w, r)
 			return
@@ -33,11 +33,11 @@ func ZipHandlerWrite(next http.HandlerFunc) http.HandlerFunc {
 		w.Header().Set("Content-Encoding", "gzip")
 
 		next.ServeHTTP(zipWriter{ResponseWriter: w, Writer: gz}, r)
-	}
+	})
 }
 
-func ZipHandlerRead(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func ZipHandlerRead(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
 			next.ServeHTTP(w, r)
 			return
@@ -51,5 +51,5 @@ func ZipHandlerRead(next http.HandlerFunc) http.HandlerFunc {
 		defer gz.Close()
 		r.Body = gz
 		next.ServeHTTP(w, r)
-	}
+	})
 }
