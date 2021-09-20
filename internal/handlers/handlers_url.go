@@ -11,15 +11,40 @@ import (
 var Repo global.Repository
 var BaseURL string
 
+func HandlerUserPostURLs(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	userID := ctx.Value(global.CtxString("userId")).(string)
+
+	ud := Repo.GetUserURLs(userID)
+
+	if len(ud) == 0 {
+		w.WriteHeader(204)
+		return
+	}
+
+	res, err := json.Marshal(ud)
+	if err != nil {
+		w.WriteHeader(400)
+		return
+	}
+
+	w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
+	w.WriteHeader(200)
+	w.Write(res)
+}
+
 // HandlerUrlPost saves url from request body to repository.
 func HandlerURLPost(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	userID := ctx.Value(global.CtxString("userId")).(string)
+
 	textBody, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		w.WriteHeader(400)
 		return
 	}
-	retURL := BaseURL + "/" + Repo.SaveURL(textBody, "")
+	retURL := Repo.SaveURL(textBody, BaseURL+"/", userID)
 	w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
 	w.WriteHeader(201)
 	w.Write([]byte(retURL))
@@ -28,6 +53,10 @@ func HandlerURLPost(w http.ResponseWriter, r *http.Request) {
 
 //HandlerAPIURLPost saves url from body request.
 func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	userID := ctx.Value(global.CtxString("userId")).(string)
+
 	tURLJson := &struct {
 		URLLong string `json:"url"`
 	}{}
@@ -45,7 +74,7 @@ func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
 	tResJSON := &struct {
 		URLShorten string `json:"result"`
 	}{
-		URLShorten: BaseURL + "/" + Repo.SaveURL([]byte(tURLJson.URLLong), ""),
+		URLShorten: Repo.SaveURL([]byte(tURLJson.URLLong), BaseURL+"/", userID),
 	}
 
 	res, err := json.Marshal(tResJSON)

@@ -21,6 +21,7 @@ func (s *Server) Start(repo global.Repository, opt global.Options) {
 	r.Use(middlewares.SetCookieUser, middlewares.ZipHandlerRead, middlewares.ZipHandlerWrite)
 	//r.Use(middlewares.ZipHandlerRead, middlewares.ZipHandlerWrite)
 	r.Post("/", handlers.HandlerURLPost)
+	r.Get("/user/urls", handlers.HandlerUserPostURLs)
 	r.Route("/{id}", func(r chi.Router) {
 		r.Use(middlewares.URLCtx)
 		r.Get("/", handlers.HandlerURLGet)

@@ -23,11 +23,11 @@ type UsersRepo struct {
 	CurrentID int
 }
 
-func (s *ServerRepo) SaveURL(url []byte, userID string) string {
+func (s *ServerRepo) SaveURL(url []byte, baseURL, userID string) string {
 	r := shorter.MakeShortner(url)
-	(*s).URLsData[r] = []string{string(url)}
+	(*s).URLsData[r] = []string{string(url), baseURL, userID}
 	serializeURLRepo(s)
-	return r
+	return baseURL + r
 }
 
 func (s *ServerRepo) GetURL(id string) (string, error) {
@@ -35,6 +35,21 @@ func (s *ServerRepo) GetURL(id string) (string, error) {
 		return string(r[0]), nil
 	}
 	return "", errors.New("not found")
+}
+
+func (s *ServerRepo) GetUserURLs(userID string) []global.URLs {
+	ud := s.URLsData
+	m := make([]global.URLs, 0, 0)
+	for key, value := range ud {
+		if value[2] == userID {
+			m = append(m, global.URLs{
+				ShortURL:    value[1] + key,
+				OriginalURL: value[0],
+			})
+		}
+	}
+
+	return m
 }
 
 func (u *UsersRepo) getNewID() int {
@@ -62,15 +77,6 @@ func (s *ServerRepo) CreateUser() (string, error) {
 	return newKey, nil
 }
 
-var ur *UsersRepo
-
-func init() {
-	ur = &UsersRepo{
-		Data:      make(map[string]int),
-		CurrentID: 0,
-	}
-}
-
 // NewUrlRepo return obj with alocate data.
 func NewRepo(repoFileName string) *ServerRepo {
 	servRepo := &ServerRepo{
@@ -82,6 +88,7 @@ func NewRepo(repoFileName string) *ServerRepo {
 	}
 	serialize.NewSerialize(repoFileName)
 	serialize.ReadRepoFromFile(servRepo)
+	// fmt.Println(servRepo)
 	serializeURLRepo = serialize.SaveRepoToFile
 
 	return servRepo

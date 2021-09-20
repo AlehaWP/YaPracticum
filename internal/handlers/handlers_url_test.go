@@ -21,8 +21,8 @@ type UrlsMock struct {
 	mock.Mock
 }
 
-func (m *UrlsMock) SaveURL(url []byte, userID string) string {
-	args := m.Called(url, "")
+func (m *UrlsMock) SaveURL(url []byte, baseURL, userID string) string {
+	args := m.Called(url, baseURL, userID)
 	return args.String(0)
 }
 
@@ -45,6 +45,10 @@ func (m *UrlsMock) FindUser(string) bool {
 
 func (m *UrlsMock) CreateUser() (string, error) {
 	return "", nil
+}
+
+func (m *UrlsMock) GetUserURLs(string) []global.URLs {
+	return nil
 }
 
 /*type OptsMock struct {
@@ -110,9 +114,9 @@ func TestHandlerUrlGet(t *testing.T) {
 
 func TestHandlerUrlPost(t *testing.T) {
 	repoMock := new(UrlsMock)
-	repoMock.On("SaveURL", []byte("www.example.com"), "").Return("123123asdasd")
+	repoMock.On("SaveURL", []byte("www.example.com"), "http://baseURL/", "").Return("http://baseURL/123123asdasd")
 
-	NewHandlers(repoMock, "http://someurl")
+	NewHandlers(repoMock, "http://baseURL")
 	handler := http.HandlerFunc(HandlerURLPost)
 	r := httptest.NewRequest("POST", "http://localhost:8080", strings.NewReader("www.example.com"))
 	w := httptest.NewRecorder()
@@ -121,7 +125,7 @@ func TestHandlerUrlPost(t *testing.T) {
 	b, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
 	assert.Equal(t, 201, res.StatusCode, "Не верный код ответа POST")
-	assert.Equal(t, "http://someurl/123123asdasd", string(b), "Не верный ответ POST")
+	assert.Equal(t, "http://baseURL/123123asdasd", string(b), "Не верный ответ POST")
 
 }
 
@@ -136,8 +140,8 @@ func TestHandlerApiUrlPost(t *testing.T) {
 		t.Error("Ошибка серилизации")
 	}
 	repoMock := new(UrlsMock)
-	repoMock.On("SaveURL", []byte("www.example.com"), "").Return("123123asdasd")
-	NewHandlers(repoMock, "http://someurl")
+	repoMock.On("SaveURL", []byte("www.example.com"), "http://baseURL/", "").Return("http://baseURL/123123asdasd")
+	NewHandlers(repoMock, "http://baseURL")
 	handler := http.HandlerFunc(HandlerAPIURLPost)
 	r := httptest.NewRequest("POST", "http://localhost:8080", bytes.NewBuffer(bOut))
 	w := httptest.NewRecorder()
@@ -146,6 +150,6 @@ func TestHandlerApiUrlPost(t *testing.T) {
 	b, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
 	assert.Equal(t, 201, res.StatusCode, "Не верный код ответа POST")
-	assert.Equal(t, `{"result":"http://someurl/123123asdasd"}`, string(b), "Не верный ответ POST")
+	assert.Equal(t, `{"result":"http://baseURL/123123asdasd"}`, string(b), "Не верный ответ POST")
 
 }

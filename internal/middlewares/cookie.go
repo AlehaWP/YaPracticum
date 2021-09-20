@@ -12,12 +12,11 @@ var Repo global.Repository
 
 func SetCookieUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c, err := r.Cookie("UserID")
+		c, err := r.Cookie("user_id")
 		cv := ""
 		if err == nil {
 			cv = c.Value
 		}
-
 		if ok := Repo.FindUser(cv); !ok {
 			cv, err = Repo.CreateUser()
 			if err != nil {
@@ -28,7 +27,7 @@ func SetCookieUser(next http.Handler) http.Handler {
 		}
 
 		c = &http.Cookie{
-			Name:  "UserID",
+			Name:  "user_id",
 			Value: cv,
 		}
 		http.SetCookie(w, c)
