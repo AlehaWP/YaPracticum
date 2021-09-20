@@ -21,8 +21,8 @@ type UrlsMock struct {
 	mock.Mock
 }
 
-func (m *UrlsMock) SaveURL(url []byte) string {
-	args := m.Called(url)
+func (m *UrlsMock) SaveURL(url []byte, userID string) string {
+	args := m.Called(url, "")
 	return args.String(0)
 }
 
@@ -31,11 +31,11 @@ func (m *UrlsMock) GetURL(id string) (string, error) {
 	return args.String(0), args.Error(1)
 }
 
-func (m *UrlsMock) Get() map[string]string {
+func (m *UrlsMock) Get() map[string][]string {
 	return nil
 }
 
-func (m *UrlsMock) ToSet() *map[string]string {
+func (m *UrlsMock) ToSet() *map[string][]string {
 	return nil
 }
 
@@ -100,7 +100,7 @@ func TestHandlerUrlGet(t *testing.T) {
 
 func TestHandlerUrlPost(t *testing.T) {
 	repoMock := new(UrlsMock)
-	repoMock.On("SaveURL", []byte("www.example.com")).Return("123123asdasd")
+	repoMock.On("SaveURL", []byte("www.example.com"), "").Return("123123asdasd")
 	handler := http.HandlerFunc(HandlerURLPost(repoMock, "http://someurl"))
 	r := httptest.NewRequest("POST", "http://localhost:8080", strings.NewReader("www.example.com"))
 	w := httptest.NewRecorder()
@@ -124,7 +124,7 @@ func TestHandlerApiUrlPost(t *testing.T) {
 		t.Error("Ошибка серилизации")
 	}
 	repoMock := new(UrlsMock)
-	repoMock.On("SaveURL", []byte("www.example.com")).Return("123123asdasd")
+	repoMock.On("SaveURL", []byte("www.example.com"), "").Return("123123asdasd")
 	handler := http.HandlerFunc(HandlerAPIURLPost(repoMock, "http://someurl"))
 	r := httptest.NewRequest("POST", "http://localhost:8080", bytes.NewBuffer(bOut))
 	w := httptest.NewRecorder()

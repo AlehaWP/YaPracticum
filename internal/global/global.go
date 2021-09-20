@@ -1,5 +1,10 @@
 package global
 
+type Urls struct {
+	url    string
+	userID int
+}
+
 //Options interface for program options.
 type Options interface {
 	ServAddr() string
@@ -10,7 +15,7 @@ type Options interface {
 //Repository interface repo urls.
 type Repository interface {
 	GetURL(string) (string, error)
-	SaveURL([]byte) string
-	Get() map[string]string
-	ToSet() *map[string]string
+	SaveURL([]byte, string) string
+	Get() map[string][]string
+	ToSet() *map[string][]string
 }

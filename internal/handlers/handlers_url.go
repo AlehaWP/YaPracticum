@@ -18,7 +18,7 @@ func HandlerURLPost(repo global.Repository, baseURL string) http.HandlerFunc {
 			w.WriteHeader(400)
 			return
 		}
-		retURL := baseURL + "/" + repo.SaveURL(textBody)
+		retURL := baseURL + "/" + repo.SaveURL(textBody, "")
 		w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
 		w.WriteHeader(201)
 		w.Write([]byte(retURL))
@@ -46,7 +46,7 @@ func HandlerAPIURLPost(repo global.Repository, baseURL string) http.HandlerFunc 
 		tResJSON := &struct {
 			URLShorten string `json:"result"`
 		}{
-			URLShorten: baseURL + "/" + repo.SaveURL([]byte(tURLJson.URLLong)),
+			URLShorten: baseURL + "/" + repo.SaveURL([]byte(tURLJson.URLLong), ""),
 		}
 
 		res, err := json.Marshal(tResJSON)
