@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/AlehaWP/YaPracticum.git/internal/defoptions"
 	"github.com/AlehaWP/YaPracticum.git/internal/repository"
-	"github.com/AlehaWP/YaPracticum.git/internal/serialize"
 	"github.com/AlehaWP/YaPracticum.git/internal/server"
 )
 
@@ -12,12 +11,7 @@ func main() {
 
 	opt := defoptions.NewDefOptions()
 
-	urlRepo := repository.NewURLRepo()
-
-	serialize.NewSerialize(opt.RepoFileName())
-	serialize.ReadURLSFromFile(urlRepo)
-	repository.SerializeURLRepo = serialize.SaveURLSToFile
-
+	serverRepo := repository.NewRepo(opt.RepoFileName())
 	s := new(server.Server)
-	s.Start(urlRepo, opt)
+	s.Start(serverRepo, opt)
 }

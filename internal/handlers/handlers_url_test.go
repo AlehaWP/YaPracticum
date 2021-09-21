@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/AlehaWP/YaPracticum.git/internal/repository"
+	"github.com/AlehaWP/YaPracticum.git/internal/global"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -21,8 +21,8 @@ type UrlsMock struct {
 	mock.Mock
 }
 
-func (m *UrlsMock) SaveURL(url []byte) string {
-	args := m.Called(url)
+func (m *UrlsMock) SaveURL(url []byte, baseURL, userID string) string {
+	args := m.Called(url, baseURL, userID)
 	return args.String(0)
 }
 
@@ -31,11 +31,23 @@ func (m *UrlsMock) GetURL(id string) (string, error) {
 	return args.String(0), args.Error(1)
 }
 
-func (m *UrlsMock) Get() map[string]string {
-	return nil
+// func (m *UrlsMock) Get() map[string][]string {
+// 	return nil
+// }
+
+// func (m *UrlsMock) ToSet() *map[string][]string {
+// 	return nil
+// }
+
+func (m *UrlsMock) FindUser(string) bool {
+	return false
 }
 
-func (m *UrlsMock) ToSet() *map[string]string {
+func (m *UrlsMock) CreateUser() (string, error) {
+	return "", nil
+}
+
+func (m *UrlsMock) GetUserURLs(string) []global.URLs {
 	return nil
 }
 
@@ -77,7 +89,9 @@ func TestHandlerUrlGet(t *testing.T) {
 	}
 
 	repoMock := new(UrlsMock)
-	handler := http.HandlerFunc(HandlerURLGet(repoMock))
+
+	NewHandlers(repoMock, "http://someurl")
+	handler := http.HandlerFunc(HandlerURLGet)
 
 	for key, value := range dataTests {
 		log.Println("start test", key)
@@ -88,7 +102,7 @@ func TestHandlerUrlGet(t *testing.T) {
 		repoMock.On("GetURL", value["reqID"].(string)).Return(value["mockReturn1"].(string), err)
 		r := httptest.NewRequest("GET", "/"+value["reqID"].(string), strings.NewReader(""))
 		w := httptest.NewRecorder()
-		ctx := context.WithValue(context.Background(), repository.Key("id"), value["reqID"].(string))
+		ctx := context.WithValue(context.Background(), global.CtxString("url_id"), value["reqID"].(string))
 		handler.ServeHTTP(w, r.WithContext(ctx))
 
 		res := w.Result()
@@ -100,16 +114,21 @@ func TestHandlerUrlGet(t *testing.T) {
 
 func TestHandlerUrlPost(t *testing.T) {
 	repoMock := new(UrlsMock)
-	repoMock.On("SaveURL", []byte("www.example.com")).Return("123123asdasd")
-	handler := http.HandlerFunc(HandlerURLPost(repoMock, "http://someurl"))
+	repoMock.On("SaveURL", []byte("www.example.com"), "http://baseURL/", "asdasd").Return("http://baseURL/123123asdasd")
+
+	NewHandlers(repoMock, "http://baseURL")
+	handler := http.HandlerFunc(HandlerURLPost)
 	r := httptest.NewRequest("POST", "http://localhost:8080", strings.NewReader("www.example.com"))
 	w := httptest.NewRecorder()
-	handler.ServeHTTP(w, r)
+
+	ctx := context.WithValue(context.Background(), global.CtxString("UserID"), "asdasd")
+	handler.ServeHTTP(w, r.WithContext(ctx))
+
 	res := w.Result()
 	b, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
 	assert.Equal(t, 201, res.StatusCode, "Не верный код ответа POST")
-	assert.Equal(t, "http://someurl/123123asdasd", string(b), "Не верный ответ POST")
+	assert.Equal(t, "http://baseURL/123123asdasd", string(b), "Не верный ответ POST")
 
 }
 
@@ -124,15 +143,18 @@ func TestHandlerApiUrlPost(t *testing.T) {
 		t.Error("Ошибка серилизации")
 	}
 	repoMock := new(UrlsMock)
-	repoMock.On("SaveURL", []byte("www.example.com")).Return("123123asdasd")
-	handler := http.HandlerFunc(HandlerAPIURLPost(repoMock, "http://someurl"))
+	repoMock.On("SaveURL", []byte("www.example.com"), "http://baseURL/", "aasdasdSQW").Return("http://baseURL/123123asdasd")
+	NewHandlers(repoMock, "http://baseURL")
+	handler := http.HandlerFunc(HandlerAPIURLPost)
 	r := httptest.NewRequest("POST", "http://localhost:8080", bytes.NewBuffer(bOut))
 	w := httptest.NewRecorder()
-	handler.ServeHTTP(w, r)
+
+	ctx := context.WithValue(context.Background(), global.CtxString("UserID"), "aasdasdSQW")
+	handler.ServeHTTP(w, r.WithContext(ctx))
 	res := w.Result()
 	b, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
 	assert.Equal(t, 201, res.StatusCode, "Не верный код ответа POST")
-	assert.Equal(t, `{"result":"http://someurl/123123asdasd"}`, string(b), "Не верный ответ POST")
+	assert.Equal(t, `{"result":"http://baseURL/123123asdasd"}`, string(b), "Не верный ответ POST")
 
 }

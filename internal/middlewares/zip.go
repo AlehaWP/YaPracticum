@@ -1,4 +1,4 @@
-package handlers
+package middlewares
 
 import (
 	"compress/gzip"
@@ -16,7 +16,7 @@ func (w zipWriter) Write(b []byte) (int, error) {
 	return w.Writer.Write(b)
 }
 
-func ZipHandlerWrite(next http.HandlerFunc) http.HandlerFunc {
+func ZipHandlerWrite(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
 			next.ServeHTTP(w, r)
@@ -36,7 +36,7 @@ func ZipHandlerWrite(next http.HandlerFunc) http.HandlerFunc {
 	})
 }
 
-func ZipHandlerRead(next http.HandlerFunc) http.HandlerFunc {
+func ZipHandlerRead(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
 			next.ServeHTTP(w, r)
