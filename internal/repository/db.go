@@ -7,6 +7,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
+//CheckDBConnection trying connect to db.
 func (s *ServerRepo) CheckDBConnection(connStr string) error {
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
