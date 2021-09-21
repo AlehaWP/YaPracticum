@@ -10,6 +10,7 @@ import (
 
 var Repo global.Repository
 var BaseURL string
+var Opt global.Options
 
 func HandlerUserPostURLs(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -33,6 +34,14 @@ func HandlerUserPostURLs(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
+func HandlerCheckDBConnect(w http.ResponseWriter, r *http.Request) {
+	if err := Repo.CheckDBConnection(Opt.DBConnString()); err != nil {
+		w.WriteHeader(500)
+		return
+	}
+	w.WriteHeader(200)
+}
+
 // HandlerUrlPost saves url from request body to repository.
 func HandlerURLPost(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -48,7 +57,6 @@ func HandlerURLPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
 	w.WriteHeader(201)
 	w.Write([]byte(retURL))
-
 }
 
 //HandlerAPIURLPost saves url from body request.
@@ -103,7 +111,8 @@ func HandlerURLGet(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(307)
 }
 
-func NewHandlers(repo global.Repository, baseURL string) {
+func NewHandlers(repo global.Repository, opt global.Options) {
 	Repo = repo
-	BaseURL = baseURL
+	BaseURL = opt.RespBaseURL()
+	Opt = opt
 }

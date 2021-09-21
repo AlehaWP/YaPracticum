@@ -17,61 +17,83 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type UrlsMock struct {
+type RepoMock struct {
 	mock.Mock
 }
 
-func (m *UrlsMock) SaveURL(url []byte, baseURL, userID string) string {
+func (m *RepoMock) SaveURL(url []byte, baseURL, userID string) string {
 	args := m.Called(url, baseURL, userID)
 	return args.String(0)
 }
 
-func (m *UrlsMock) GetURL(id string) (string, error) {
+func (m *RepoMock) GetURL(id string) (string, error) {
 	args := m.Called(id)
 	return args.String(0), args.Error(1)
 }
 
-// func (m *UrlsMock) Get() map[string][]string {
+// func (m *RepoMock) Get() map[string][]string {
 // 	return nil
 // }
 
-// func (m *UrlsMock) ToSet() *map[string][]string {
+// func (m *RepoMock) ToSet() *map[string][]string {
 // 	return nil
 // }
 
-func (m *UrlsMock) FindUser(string) bool {
+func (m *RepoMock) FindUser(string) bool {
 	return false
 }
 
-func (m *UrlsMock) CreateUser() (string, error) {
+func (m *RepoMock) CreateUser() (string, error) {
 	return "", nil
 }
 
-func (m *UrlsMock) GetUserURLs(string) []global.URLs {
+func (m *RepoMock) GetUserURLs(string) []global.URLs {
 	return nil
 }
 
-/*type OptsMock struct {
+func (m *RepoMock) CheckDBConnection(string) error {
+	return nil
+}
+
+type OptsMock struct {
 	mock.Mock
 }
 
-func (o *OptsMock) ServAddr() string{
+func (o *OptsMock) ServAddr() string {
 	args := o.Called()
-    return args.String()
+	return args.String(0)
 }
 
-func (o *OptsMock)  RespBaseURL() string{
+func (o *OptsMock) RespBaseURL() string {
 	args := o.Called()
-    return args.String()
+	return args.String(0)
 }
 
-func (o *OptsMock) RepoFileName() string{
+func (o *OptsMock) RepoFileName() string {
 	args := o.Called()
-    return args.String()
+	return args.String(0)
 }
-*/
+
+func (o *OptsMock) DBConnString() string {
+	args := o.Called()
+	return args.String(0)
+}
+
+func newOptsMock() *OptsMock {
+	optMock := new(OptsMock)
+	optMock.On("ServAddr").Return("http://localhost:8080")
+	optMock.On("RespBaseURL").Return("http://localhost")
+	optMock.On("RepoFileName").Return("local.db")
+	optMock.On("DBConnString").Return("user=kseikseich dbname=yap sslmode=disable")
+	return optMock
+}
+
+var repoMock *RepoMock
+var optsMock *OptsMock
+var opt global.Options
 
 func TestHandlerUrlGet(t *testing.T) {
+	InitMocks()
 	dataTests := map[string]map[string]interface{}{
 		"test1": {
 			"reqID":       "123123asdasd",
@@ -88,9 +110,6 @@ func TestHandlerUrlGet(t *testing.T) {
 		},
 	}
 
-	repoMock := new(UrlsMock)
-
-	NewHandlers(repoMock, "http://someurl")
 	handler := http.HandlerFunc(HandlerURLGet)
 
 	for key, value := range dataTests {
@@ -100,6 +119,7 @@ func TestHandlerUrlGet(t *testing.T) {
 			err = value["mockReturn2"].(error)
 		}
 		repoMock.On("GetURL", value["reqID"].(string)).Return(value["mockReturn1"].(string), err)
+
 		r := httptest.NewRequest("GET", "/"+value["reqID"].(string), strings.NewReader(""))
 		w := httptest.NewRecorder()
 		ctx := context.WithValue(context.Background(), global.CtxString("url_id"), value["reqID"].(string))
@@ -113,10 +133,8 @@ func TestHandlerUrlGet(t *testing.T) {
 }
 
 func TestHandlerUrlPost(t *testing.T) {
-	repoMock := new(UrlsMock)
-	repoMock.On("SaveURL", []byte("www.example.com"), "http://baseURL/", "asdasd").Return("http://baseURL/123123asdasd")
+	repoMock.On("SaveURL", []byte("www.example.com"), opt.RespBaseURL()+"/", "asdasd").Return(opt.RespBaseURL() + "/123123asdasd")
 
-	NewHandlers(repoMock, "http://baseURL")
 	handler := http.HandlerFunc(HandlerURLPost)
 	r := httptest.NewRequest("POST", "http://localhost:8080", strings.NewReader("www.example.com"))
 	w := httptest.NewRecorder()
@@ -128,7 +146,7 @@ func TestHandlerUrlPost(t *testing.T) {
 	b, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
 	assert.Equal(t, 201, res.StatusCode, "Не верный код ответа POST")
-	assert.Equal(t, "http://baseURL/123123asdasd", string(b), "Не верный ответ POST")
+	assert.Equal(t, opt.RespBaseURL()+"/123123asdasd", string(b), "Не верный ответ POST")
 
 }
 
@@ -142,9 +160,8 @@ func TestHandlerApiUrlPost(t *testing.T) {
 	if err != nil {
 		t.Error("Ошибка серилизации")
 	}
-	repoMock := new(UrlsMock)
-	repoMock.On("SaveURL", []byte("www.example.com"), "http://baseURL/", "aasdasdSQW").Return("http://baseURL/123123asdasd")
-	NewHandlers(repoMock, "http://baseURL")
+
+	repoMock.On("SaveURL", []byte("www.example.com"), opt.RespBaseURL()+"/", "aasdasdSQW").Return(opt.RespBaseURL() + "/123123asdasd")
 	handler := http.HandlerFunc(HandlerAPIURLPost)
 	r := httptest.NewRequest("POST", "http://localhost:8080", bytes.NewBuffer(bOut))
 	w := httptest.NewRecorder()
@@ -155,6 +172,13 @@ func TestHandlerApiUrlPost(t *testing.T) {
 	b, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
 	assert.Equal(t, 201, res.StatusCode, "Не верный код ответа POST")
-	assert.Equal(t, `{"result":"http://baseURL/123123asdasd"}`, string(b), "Не верный ответ POST")
+	assert.Equal(t, `{"result":"`+opt.RespBaseURL()+`/123123asdasd"}`, string(b), "Не верный ответ POST")
 
+}
+
+func InitMocks() {
+	repoMock = new(RepoMock)
+	optsMock = newOptsMock()
+	opt = optsMock
+	NewHandlers(repoMock, optsMock)
 }

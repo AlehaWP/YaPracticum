@@ -10,7 +10,6 @@ import (
 func main() {
 
 	opt := defoptions.NewDefOptions()
-
 	serverRepo := repository.NewRepo(opt.RepoFileName())
 	s := new(server.Server)
 	s.Start(serverRepo, opt)

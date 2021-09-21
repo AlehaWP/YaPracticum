@@ -16,12 +16,13 @@ type Server struct {
 //Start server with router.
 func (s *Server) Start(repo global.Repository, opt global.Options) {
 	r := chi.NewRouter()
-	handlers.NewHandlers(repo, opt.RespBaseURL())
+	handlers.NewHandlers(repo, opt)
 	middlewares.NewCookie(repo)
 	r.Use(middlewares.SetCookieUser, middlewares.ZipHandlerRead, middlewares.ZipHandlerWrite)
 	//r.Use(middlewares.ZipHandlerRead, middlewares.ZipHandlerWrite)
 	r.Post("/", handlers.HandlerURLPost)
 	r.Get("/user/urls", handlers.HandlerUserPostURLs)
+	r.Get("/ping", handlers.HandlerCheckDBConnect)
 	r.Route("/{id}", func(r chi.Router) {
 		r.Use(middlewares.URLCtx)
 		r.Get("/", handlers.HandlerURLGet)

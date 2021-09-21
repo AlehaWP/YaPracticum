@@ -12,6 +12,7 @@ type Options interface {
 	ServAddr() string
 	RespBaseURL() string
 	RepoFileName() string
+	DBConnString() string
 }
 
 //Repository interface repo urls.
@@ -21,4 +22,5 @@ type Repository interface {
 	FindUser(string) bool
 	CreateUser() (string, error)
 	GetUserURLs(string) []URLs
+	CheckDBConnection(string) error
 }
