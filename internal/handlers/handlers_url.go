@@ -35,7 +35,7 @@ func HandlerUserPostURLs(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandlerCheckDBConnect(w http.ResponseWriter, r *http.Request) {
-	if err := Repo.CheckDBConnection(Opt.DBConnString()); err != nil {
+	if err := Repo.CheckDBConnection(); err != nil {
 		w.WriteHeader(500)
 		return
 	}

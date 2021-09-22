@@ -16,6 +16,7 @@ var serializeURLRepo func(global.Repository)
 type ServerRepo struct {
 	URLsData map[string][]string
 	Users    UsersRepo
+	connStr  string
 }
 
 type UsersRepo struct {
@@ -73,7 +74,7 @@ func (s *ServerRepo) CreateUser() (string, error) {
 		return "", err
 	}
 	ur.Data[newKey] = id
-	serializeURLRepo(s)
+	// serializeURLRepo(s)
 	return newKey, nil
 }
 

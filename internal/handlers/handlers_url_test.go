@@ -51,7 +51,7 @@ func (m *RepoMock) GetUserURLs(string) []global.URLs {
 	return nil
 }
 
-func (m *RepoMock) CheckDBConnection(string) error {
+func (m *RepoMock) CheckDBConnection() error {
 	return nil
 }
 

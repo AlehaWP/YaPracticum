@@ -22,5 +22,5 @@ type Repository interface {
 	FindUser(string) bool
 	CreateUser() (string, error)
 	GetUserURLs(string) []URLs
-	CheckDBConnection(string) error
+	CheckDBConnection() error
 }
