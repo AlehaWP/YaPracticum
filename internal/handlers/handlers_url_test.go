@@ -47,8 +47,8 @@ func (m *RepoMock) CreateUser() (string, error) {
 	return "", nil
 }
 
-func (m *RepoMock) GetUserURLs(string) []global.URLs {
-	return nil
+func (m *RepoMock) GetUserURLs(string) ([]global.URLs, error) {
+	return nil, nil
 }
 
 func (m *RepoMock) CheckDBConnection() error {

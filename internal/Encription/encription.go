@@ -5,7 +5,6 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"fmt"
-	"strconv"
 )
 
 var keySize int = 16
@@ -19,7 +18,7 @@ func generateRandom(size int) ([]byte, error) {
 	return b, nil
 }
 
-func EncriptInt(i int) (string, error) {
+func EncriptStr(s string) (string, error) {
 	key, err := generateRandom(aes.BlockSize)
 	if err != nil {
 		return "", err
@@ -31,7 +30,7 @@ func EncriptInt(i int) (string, error) {
 	}
 
 	res := make([]byte, aesblock.BlockSize())
-	hash := md5.Sum([]byte(strconv.Itoa(i)))
+	hash := md5.Sum([]byte(s))
 	aesblock.Encrypt(res, hash[:])
 
 	return fmt.Sprintf("%x", res), nil

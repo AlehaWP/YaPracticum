@@ -21,6 +21,6 @@ type Repository interface {
 	SaveURL([]byte, string, string) (string, error)
 	FindUser(string) bool
 	CreateUser() (string, error)
-	GetUserURLs(string) []URLs
+	GetUserURLs(string) ([]URLs, error)
 	CheckDBConnection() error
 }

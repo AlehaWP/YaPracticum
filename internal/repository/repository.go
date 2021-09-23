@@ -3,10 +3,14 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
+	encription "github.com/AlehaWP/YaPracticum.git/internal/Encription"
 	"github.com/AlehaWP/YaPracticum.git/internal/global"
 	"github.com/AlehaWP/YaPracticum.git/internal/shorter"
+
+	"github.com/google/uuid"
 )
 
 var serializeURLRepo func(global.Repository)
@@ -55,39 +59,72 @@ func (s *ServerRepo) GetURL(id string) (string, error) {
 	return url, nil
 }
 
-func (s *ServerRepo) GetUserURLs(userID string) []global.URLs {
+func (s *ServerRepo) GetUserURLs(userEncId string) ([]global.URLs, error) {
+	db := s.db
+	ctx, cancelfunc := context.WithTimeout(s.ctx, 5*time.Second)
+	defer cancelfunc()
 	// ud := s.URLsData
-	// m := make([]global.URLs, 0)
-	// for key, value := range ud {
-	// 	if value[2] == userID {
-	// 		m = append(m, global.URLs{
-	// 			ShortURL:    value[1] + key,
-	// 			OriginalURL: value[0],
-	// 		})
-	// 	}
-	// }
+	m := make([]global.URLs, 0)
+	q := `SELECT url, shorten_url from urls as u
+		INNER JOIN users as us ON u.user_id=us.id
+		where us.user_enc_id=$1
+	`
+	rows, err := db.QueryContext(ctx, q, userEncId)
+	fmt.Println(userEncId)
+	if err != nil {
+		return nil, err
+	}
 
-	// return m
-	return nil
+	defer rows.Close()
+
+	for rows.Next() {
+		var g global.URLs
+		if err := rows.Scan(&g.OriginalURL, &g.ShortURL); err != nil {
+			return m, err
+		}
+		m = append(m, g)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
-func (s *ServerRepo) FindUser(key string) (finded bool) {
-	// ur := s.Users
-	// if _, ok := ur.Data[key]; ok {
-	// 	return true
-	// }
-	return false
+func (s *ServerRepo) FindUser(userEncId string) (finded bool) {
+	db := s.db
+	ctx, cancelfunc := context.WithTimeout(s.ctx, 5*time.Second)
+	defer cancelfunc()
+	q := `SELECT id FROM users WHERE user_enc_id=$1`
+	var id int
+	row := db.QueryRowContext(ctx, q, userEncId)
+
+	if err := row.Scan(&id); err != nil {
+		return false
+	}
+	if id == 0 {
+		return false
+	}
+	return true
 }
 
 func (s *ServerRepo) CreateUser() (string, error) {
-	// ur := &s.Users
-	// id := ur.getNewID()
-	// newKey, err := encription.EncriptInt(id)
-	// if err != nil {
-	// 	return "", err
-	// }
-	// ur.Data[newKey] = id
-	// // serializeURLRepo(s)
-	// return newKey, nil
-	return "", nil
+	db := s.db
+	ctx, cancelfunc := context.WithTimeout(s.ctx, 5*time.Second)
+	defer cancelfunc()
+
+	ur := uuid.New()
+	ur_enc, err := encription.EncriptStr(ur.String())
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	q := `INSERT INTO users (user_uuid, user_enc_id) VALUES ($1, $2)`
+
+	if _, err := db.ExecContext(ctx, q, ur, ur_enc); err != nil {
+		fmt.Println(ur, ur_enc, err)
+		return "", err
+	}
+
+	return ur_enc, nil
 }

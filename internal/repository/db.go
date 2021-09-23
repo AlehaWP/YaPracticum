@@ -29,8 +29,8 @@ func (s *ServerRepo) createTables() error {
 
 	q := `CREATE TABLE IF NOT EXISTS users (
 		id SERIAL PRIMARY KEY,
-		user_uuid CHAR(16),
-		user_enc_id CHAR(32),
+		user_uuid CHAR(36),
+		user_enc_id CHAR(36),
 		date_add timestamp
 	)`
 	if _, err := db.ExecContext(ctx, q); err != nil {
