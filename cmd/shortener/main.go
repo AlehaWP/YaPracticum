@@ -12,12 +12,13 @@ import (
 func main() {
 
 	opt := defoptions.NewDefOptions()
-	serverRepo, err := repository.NewServerRepo(opt.DBConnString())
+	sr, err := repository.NewServerRepo(opt.DBConnString())
 	if err != nil {
 		fmt.Println("Ошибка при подключении к БД: ", err)
 		return
 	}
 	// serverRepo := repository.NewRepo(opt.RepoFileName())
 	s := new(server.Server)
-	s.Start(serverRepo, opt)
+	s.Start(sr, opt)
+	defer sr.Close()
 }

@@ -8,79 +8,65 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type QueryToDB func() error
+//CheckDBConnection trying connect to db.
+func (s *ServerRepo) Close() {
+	s.db.Close()
+}
 
 //CheckDBConnection trying connect to db.
 func (s *ServerRepo) CheckDBConnection() error {
-	checkFunc := func(db *sql.DB) error {
-		err := db.PingContext(context.Background())
-		if err != nil {
-			return err
-		}
-		return nil
-	}
-	err := s.newConnect(checkFunc)
-	return err
-
-}
-
-func (s *ServerRepo) newConnect(qf ...func(*sql.DB) error) error {
-
-	db, err := sql.Open("postgres", s.connStr)
+	err := s.db.PingContext(context.Background())
 	if err != nil {
 		return err
 	}
-
-	for _, q := range qf {
-		if err := q(db); err != nil {
-			return err
-		}
-
-	}
-
-	defer db.Close()
-
 	return nil
 }
 
-func createTables(db *sql.DB) error {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+func (s *ServerRepo) createTables() error {
+	db := s.db
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancelFunc()
 
-	if _, err := db.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS URLS (
-						shorten_url char(32),
-						url char(255),
-						base_url char(255),
-						user_id char(32)
-	)`); err != nil {
+	q := `CREATE TABLE IF NOT EXISTS users (
+		id SERIAL PRIMARY KEY,
+		user_uuid CHAR(16),
+		user_enc_id CHAR(32),
+		date_add timestamp
+	)`
+	if _, err := db.ExecContext(ctx, q); err != nil {
 		return err
 	}
 
-	if _, err := db.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS USERS (
-			id int,
-			user_id char(32)
-	)`); err != nil {
+	q = `CREATE TABLE IF NOT EXISTS urls (
+		id SERIAL NOT NULL,
+		shorten_url CHAR(32) UNIQUE,
+		url CHAR(255),
+		base_url CHAR(255),
+		user_id INTEGER REFERENCES users (id),
+		date_add TIMESTAMPTZ NOT NULL DEFAULT NOW()
+	)`
+	if _, err := db.ExecContext(ctx, q); err != nil {
 		return err
 	}
 	return nil
 }
 
 func NewServerRepo(c string) (*ServerRepo, error) {
-	servRepo := &ServerRepo{
-		URLsData: make(map[string][]string),
-		Users: UsersRepo{
-			Data:      make(map[string]int),
-			CurrentID: 0,
-		},
+	db, err := sql.Open("postgres", c)
+	if err != nil {
+		return nil, err
+	}
+	sr := &ServerRepo{
 		connStr: c,
+		db:      db,
+		ctx:     context.Background(),
 	}
-	if err := servRepo.CheckDBConnection(); err != nil {
+	if err := sr.CheckDBConnection(); err != nil {
 		return nil, err
 	}
-	if err := servRepo.newConnect(createTables); err != nil {
+
+	if err := sr.createTables(); err != nil {
 		return nil, err
 	}
-	return servRepo, nil
-	// return &ServerRepo{
-	// 	connStr: c,
-	// }
+	return sr, nil
 }

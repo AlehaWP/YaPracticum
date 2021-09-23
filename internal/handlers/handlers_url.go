@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -51,9 +52,15 @@ func HandlerURLPost(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	if err != nil {
 		w.WriteHeader(400)
+		fmt.Println(err)
 		return
 	}
-	retURL := Repo.SaveURL(textBody, BaseURL+"/", userID)
+	retURL, err := Repo.SaveURL(textBody, BaseURL+"/", userID)
+	if err != nil {
+		w.WriteHeader(400)
+		fmt.Println(err)
+		return
+	}
 	w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
 	w.WriteHeader(201)
 	w.Write([]byte(retURL))
@@ -71,22 +78,32 @@ func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
 	textBody, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(400)
 		return
 	}
 	err = json.Unmarshal(textBody, tURLJson)
 	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(400)
+		return
+	}
+
+	su, err := Repo.SaveURL([]byte(tURLJson.URLLong), BaseURL+"/", userID)
+	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(400)
 		return
 	}
 	tResJSON := &struct {
 		URLShorten string `json:"result"`
-	}{
-		URLShorten: Repo.SaveURL([]byte(tURLJson.URLLong), BaseURL+"/", userID),
-	}
+	}{}
+
+	tResJSON.URLShorten = su
 
 	res, err := json.Marshal(tResJSON)
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(400)
 		return
 	}
