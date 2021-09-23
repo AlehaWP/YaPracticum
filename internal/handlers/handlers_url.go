@@ -18,8 +18,13 @@ func HandlerUserPostURLs(w http.ResponseWriter, r *http.Request) {
 	userID := ctx.Value(global.CtxString("UserID")).(string)
 
 	ud, err := Repo.GetUserURLs(userID)
-	if err != nil || len(ud) == 0 {
+	if err != nil {
 		w.WriteHeader(400)
+		return
+	}
+
+	if len(ud) == 0 {
+		w.WriteHeader(204)
 		return
 	}
 
