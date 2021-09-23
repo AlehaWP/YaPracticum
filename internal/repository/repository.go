@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 
 	encription "github.com/AlehaWP/YaPracticum.git/internal/Encription"
@@ -59,18 +58,16 @@ func (s *ServerRepo) GetURL(id string) (string, error) {
 	return url, nil
 }
 
-func (s *ServerRepo) GetUserURLs(userEncId string) ([]global.URLs, error) {
+func (s *ServerRepo) GetUserURLs(userEncID string) ([]global.URLs, error) {
 	db := s.db
 	ctx, cancelfunc := context.WithTimeout(s.ctx, 5*time.Second)
 	defer cancelfunc()
-	// ud := s.URLsData
 	m := make([]global.URLs, 0)
-	q := `SELECT url, shorten_url from urls as u
+	q := `SELECT url, base_url || shorten_url from urls as u
 		INNER JOIN users as us ON u.user_id=us.id
 		where us.user_enc_id=$1
 	`
-	rows, err := db.QueryContext(ctx, q, userEncId)
-	fmt.Println(userEncId)
+	rows, err := db.QueryContext(ctx, q, userEncID)
 	if err != nil {
 		return nil, err
 	}
@@ -91,13 +88,13 @@ func (s *ServerRepo) GetUserURLs(userEncId string) ([]global.URLs, error) {
 	return m, nil
 }
 
-func (s *ServerRepo) FindUser(userEncId string) (finded bool) {
+func (s *ServerRepo) FindUser(userEncID string) (finded bool) {
 	db := s.db
 	ctx, cancelfunc := context.WithTimeout(s.ctx, 5*time.Second)
 	defer cancelfunc()
 	q := `SELECT id FROM users WHERE user_enc_id=$1`
 	var id int
-	row := db.QueryRowContext(ctx, q, userEncId)
+	row := db.QueryRowContext(ctx, q, userEncID)
 
 	if err := row.Scan(&id); err != nil {
 		return false
@@ -114,17 +111,15 @@ func (s *ServerRepo) CreateUser() (string, error) {
 	defer cancelfunc()
 
 	ur := uuid.New()
-	ur_enc, err := encription.EncriptStr(ur.String())
+	urEnc, err := encription.EncriptStr(ur.String())
 	if err != nil {
-		fmt.Println(err)
 		return "", err
 	}
 	q := `INSERT INTO users (user_uuid, user_enc_id) VALUES ($1, $2)`
 
-	if _, err := db.ExecContext(ctx, q, ur, ur_enc); err != nil {
-		fmt.Println(ur, ur_enc, err)
+	if _, err := db.ExecContext(ctx, q, ur, urEnc); err != nil {
 		return "", err
 	}
 
-	return ur_enc, nil
+	return urEnc, nil
 }
