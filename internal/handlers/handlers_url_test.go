@@ -21,9 +21,9 @@ type RepoMock struct {
 	mock.Mock
 }
 
-func (m *RepoMock) SaveURL(url []byte, baseURL, userID string) string {
+func (m *RepoMock) SaveURL(url []byte, baseURL, userID string) (string, error) {
 	args := m.Called(url, baseURL, userID)
-	return args.String(0)
+	return args.String(0), args.Error(1)
 }
 
 func (m *RepoMock) GetURL(id string) (string, error) {
@@ -47,11 +47,11 @@ func (m *RepoMock) CreateUser() (string, error) {
 	return "", nil
 }
 
-func (m *RepoMock) GetUserURLs(string) []global.URLs {
-	return nil
+func (m *RepoMock) GetUserURLs(string) ([]global.URLs, error) {
+	return nil, nil
 }
 
-func (m *RepoMock) CheckDBConnection(string) error {
+func (m *RepoMock) CheckDBConnection() error {
 	return nil
 }
 
@@ -133,7 +133,7 @@ func TestHandlerUrlGet(t *testing.T) {
 }
 
 func TestHandlerUrlPost(t *testing.T) {
-	repoMock.On("SaveURL", []byte("www.example.com"), opt.RespBaseURL()+"/", "asdasd").Return(opt.RespBaseURL() + "/123123asdasd")
+	repoMock.On("SaveURL", []byte("www.example.com"), opt.RespBaseURL()+"/", "asdasd").Return(opt.RespBaseURL()+"/123123asdasd", nil)
 
 	handler := http.HandlerFunc(HandlerURLPost)
 	r := httptest.NewRequest("POST", "http://localhost:8080", strings.NewReader("www.example.com"))
@@ -161,7 +161,7 @@ func TestHandlerApiUrlPost(t *testing.T) {
 		t.Error("Ошибка серилизации")
 	}
 
-	repoMock.On("SaveURL", []byte("www.example.com"), opt.RespBaseURL()+"/", "aasdasdSQW").Return(opt.RespBaseURL() + "/123123asdasd")
+	repoMock.On("SaveURL", []byte("www.example.com"), opt.RespBaseURL()+"/", "aasdasdSQW").Return(opt.RespBaseURL()+"/123123asdasd", nil)
 	handler := http.HandlerFunc(HandlerAPIURLPost)
 	r := httptest.NewRequest("POST", "http://localhost:8080", bytes.NewBuffer(bOut))
 	w := httptest.NewRecorder()

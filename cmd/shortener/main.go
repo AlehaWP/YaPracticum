@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/AlehaWP/YaPracticum.git/internal/defoptions"
 	"github.com/AlehaWP/YaPracticum.git/internal/repository"
 	"github.com/AlehaWP/YaPracticum.git/internal/server"
@@ -10,7 +12,13 @@ import (
 func main() {
 
 	opt := defoptions.NewDefOptions()
-	serverRepo := repository.NewRepo(opt.RepoFileName())
+	sr, err := repository.NewServerRepo(opt.DBConnString())
+	if err != nil {
+		fmt.Println("Ошибка при подключении к БД: ", err)
+		return
+	}
+	// serverRepo := repository.NewRepo(opt.RepoFileName())
 	s := new(server.Server)
-	s.Start(serverRepo, opt)
+	s.Start(sr, opt)
+	defer sr.Close()
 }

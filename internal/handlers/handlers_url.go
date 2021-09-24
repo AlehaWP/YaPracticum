@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -16,7 +17,11 @@ func HandlerUserPostURLs(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	userID := ctx.Value(global.CtxString("UserID")).(string)
 
-	ud := Repo.GetUserURLs(userID)
+	ud, err := Repo.GetUserURLs(userID)
+	if err != nil {
+		w.WriteHeader(400)
+		return
+	}
 
 	if len(ud) == 0 {
 		w.WriteHeader(204)
@@ -35,7 +40,7 @@ func HandlerUserPostURLs(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandlerCheckDBConnect(w http.ResponseWriter, r *http.Request) {
-	if err := Repo.CheckDBConnection(Opt.DBConnString()); err != nil {
+	if err := Repo.CheckDBConnection(); err != nil {
 		w.WriteHeader(500)
 		return
 	}
@@ -51,9 +56,15 @@ func HandlerURLPost(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	if err != nil {
 		w.WriteHeader(400)
+		fmt.Println(err)
 		return
 	}
-	retURL := Repo.SaveURL(textBody, BaseURL+"/", userID)
+	retURL, err := Repo.SaveURL(textBody, BaseURL+"/", userID)
+	if err != nil {
+		w.WriteHeader(400)
+		fmt.Println(err)
+		return
+	}
 	w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
 	w.WriteHeader(201)
 	w.Write([]byte(retURL))
@@ -71,22 +82,32 @@ func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
 	textBody, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(400)
 		return
 	}
 	err = json.Unmarshal(textBody, tURLJson)
 	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(400)
+		return
+	}
+
+	su, err := Repo.SaveURL([]byte(tURLJson.URLLong), BaseURL+"/", userID)
+	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(400)
 		return
 	}
 	tResJSON := &struct {
 		URLShorten string `json:"result"`
-	}{
-		URLShorten: Repo.SaveURL([]byte(tURLJson.URLLong), BaseURL+"/", userID),
-	}
+	}{}
+
+	tResJSON.URLShorten = su
 
 	res, err := json.Marshal(tResJSON)
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(400)
 		return
 	}
