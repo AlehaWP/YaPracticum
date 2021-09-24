@@ -30,14 +30,15 @@ func (s *ServerRepo) SaveURL(url []byte, baseURL, userID string) (string, error)
 	db := s.db
 	ctx, cancelfunc := context.WithTimeout(s.ctx, 5*time.Second)
 	defer cancelfunc()
+
 	r := shorter.MakeShortner(url)
 	q := `INSERT INTO urls (
-		shorten_url,
-		url,
-		base_url,
-		user_id
-	) VALUES ($1,$2,$3, (SELECT COALESCE(id, 0) FROM users where user_enc_id=$4))
-	ON CONFLICT (shorten_url) DO NOTHING`
+			shorten_url,
+			url,
+			base_url,
+			user_id
+		  ) VALUES ($1,$2,$3, (SELECT COALESCE(id, 0) FROM users where user_enc_id=$4))
+		  ON CONFLICT (shorten_url) DO NOTHING`
 	if _, err := db.ExecContext(ctx, q, r, string(url), baseURL, userID); err != nil {
 		return "", err
 	}
@@ -64,9 +65,8 @@ func (s *ServerRepo) GetUserURLs(userEncID string) ([]global.URLs, error) {
 	defer cancelfunc()
 	m := make([]global.URLs, 0)
 	q := `SELECT url, base_url || shorten_url from urls as u
-		INNER JOIN users as us ON u.user_id=us.id
-		where us.user_enc_id=$1
-	`
+		  INNER JOIN users as us ON u.user_id=us.id
+		  where us.user_enc_id=$1`
 	rows, err := db.QueryContext(ctx, q, userEncID)
 	if err != nil {
 		return nil, err
