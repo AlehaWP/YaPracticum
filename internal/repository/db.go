@@ -39,6 +39,7 @@ func (s *ServerRepo) createTables() error {
 
 	q = `CREATE TABLE IF NOT EXISTS urls (
 		id SERIAL NOT NULL,
+		correlation_id VARCHAR(36), 
 		shorten_url VARCHAR(32) UNIQUE,
 		url VARCHAR(255),
 		base_url VARCHAR(255),

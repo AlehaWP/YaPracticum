@@ -26,7 +26,7 @@ type UsersRepo struct {
 	CurrentID int
 }
 
-func (s *ServerRepo) SaveURL(url []byte, baseURL, userID string) (string, error) {
+func (s *ServerRepo) SaveURL(url, baseURL, userID string) (string, error) {
 	db := s.db
 	ctx, cancelfunc := context.WithTimeout(s.ctx, 5*time.Second)
 	defer cancelfunc()
@@ -36,7 +36,7 @@ func (s *ServerRepo) SaveURL(url []byte, baseURL, userID string) (string, error)
 			shorten_url,
 			url,
 			base_url,
-			user_id
+			user_i
 		  ) VALUES ($1,$2,$3, (SELECT COALESCE(id, 0) FROM users where user_enc_id=$4))
 		  ON CONFLICT (shorten_url) DO NOTHING`
 	if _, err := db.ExecContext(ctx, q, r, string(url), baseURL, userID); err != nil {
@@ -57,6 +57,10 @@ func (s *ServerRepo) GetURL(id string) (string, error) {
 		return "", err
 	}
 	return url, nil
+}
+
+func (s *ServerRepo) SaveUrls(t []byte) ([]byte, error) {
+	return nil, nil
 }
 
 func (s *ServerRepo) GetUserURLs(userEncID string) ([]global.URLs, error) {

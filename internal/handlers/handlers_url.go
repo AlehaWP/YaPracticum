@@ -39,6 +39,47 @@ func HandlerUserPostURLs(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
+func HandlerURLsPost(w http.ResponseWriter, r *http.Request) {
+	// ctx := r.Context()
+	// userID := ctx.Value(global.CtxString("UserID")).(string)
+
+	text, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(400)
+		return
+	}
+
+	type UrlJson struct {
+		CorID     string `json:"correlation_id"`
+		OriginURL string `json:"original_url"`
+	}
+
+	var UrlsJson []UrlJson
+
+	err = json.Unmarshal(text, &UrlsJson)
+	if err != nil {
+		w.WriteHeader(400)
+		return
+	}
+
+	type UrlJsonResp struct {
+		CorID     string `json:"correlation_id"`
+		OriginURL string `json:"short_url"`
+	}
+
+	var UrlsJsonResp []UrlJsonResp
+
+	res, err := json.Marshal(&UrlsJsonResp)
+	if err != nil {
+		w.WriteHeader(400)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(200)
+	w.Write(res)
+}
+
 func HandlerCheckDBConnect(w http.ResponseWriter, r *http.Request) {
 	if err := Repo.CheckDBConnection(); err != nil {
 		w.WriteHeader(500)
@@ -59,7 +100,7 @@ func HandlerURLPost(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
-	retURL, err := Repo.SaveURL(textBody, BaseURL+"/", userID)
+	retURL, err := Repo.SaveURL(string(textBody), BaseURL+"/", userID)
 	if err != nil {
 		w.WriteHeader(400)
 		fmt.Println(err)
@@ -93,7 +134,7 @@ func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	su, err := Repo.SaveURL([]byte(tURLJson.URLLong), BaseURL+"/", userID)
+	su, err := Repo.SaveURL(tURLJson.URLLong, BaseURL+"/", userID)
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(400)
