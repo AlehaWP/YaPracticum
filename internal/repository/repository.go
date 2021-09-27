@@ -36,7 +36,7 @@ func (s *ServerRepo) SaveURL(url, baseURL, userID string) (string, error) {
 			shorten_url,
 			url,
 			base_url,
-			user_i
+			user_id
 		  ) VALUES ($1,$2,$3, (SELECT COALESCE(id, 0) FROM users where user_enc_id=$4))
 		  ON CONFLICT (shorten_url) DO NOTHING`
 	if _, err := db.ExecContext(ctx, q, r, string(url), baseURL, userID); err != nil {
