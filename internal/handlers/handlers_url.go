@@ -68,6 +68,10 @@ func HandlerAPIURLsPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	uts, err = Repo.SaveURLs(uts, BaseURL, userID)
+	if err != nil {
+		w.WriteHeader(400)
+		return
+	}
 
 	type uJR struct {
 		CorID    string `json:"correlation_id"`

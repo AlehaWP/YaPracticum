@@ -30,7 +30,7 @@ func (s *ServerRepo) saveUrlsToDB(us []urlInfo, baseURL, userID string) error {
 		url,
 		base_url,
 		user_id
-	  ) VALUES (@cid, @su, @u, @bu,(SELECT COALESCE(id, 0) FROM users where user_enc_id=@uid))
+	  ) VALUES ($1,$2,$3,$4,(SELECT COALESCE(id, 0) FROM users where user_enc_id=$5))
 	  ON CONFLICT (correlation_id) DO NOTHING`
 
 	pc, err := t.PrepareContext(ctx, q)
@@ -41,11 +41,11 @@ func (s *ServerRepo) saveUrlsToDB(us []urlInfo, baseURL, userID string) error {
 
 	for _, u := range us {
 		if _, err := pc.ExecContext(ctx,
-			sql.Named("cid", u.CorID),
-			sql.Named("su", u.Shorten),
-			sql.Named("u", u.Original),
-			sql.Named("bu", baseURL),
-			sql.Named("uid", userID),
+			u.CorID,
+			u.Shorten,
+			u.Original,
+			baseURL,
+			userID,
 		); err != nil {
 			return err
 		}
