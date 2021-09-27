@@ -95,7 +95,7 @@ func HandlerAPIURLsPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.WriteHeader(201)
 	w.Write(res)
 }
 
