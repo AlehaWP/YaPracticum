@@ -26,20 +26,22 @@ type UsersRepo struct {
 	CurrentID int
 }
 
+type urlInfo struct {
+	Shorten  string
+	Original string
+	CorID    string
+}
+
 func (s *ServerRepo) SaveURL(url, baseURL, userID string) (string, error) {
-	db := s.db
-	ctx, cancelfunc := context.WithTimeout(s.ctx, 5*time.Second)
-	defer cancelfunc()
 
 	r := shorter.MakeShortner(url)
-	q := `INSERT INTO urls (
-			shorten_url,
-			url,
-			base_url,
-			user_id
-		  ) VALUES ($1,$2,$3, (SELECT COALESCE(id, 0) FROM users where user_enc_id=$4))
-		  ON CONFLICT (shorten_url) DO NOTHING`
-	if _, err := db.ExecContext(ctx, q, r, string(url), baseURL, userID); err != nil {
+	u := urlInfo{
+		Shorten:  r,
+		Original: url,
+		CorID:    uuid.New().String(),
+	}
+	us := []urlInfo{u}
+	if err := s.saveUrlsToDB(us, baseURL, userID); err != nil {
 		return "", err
 	}
 	return baseURL + r, nil
@@ -59,8 +61,22 @@ func (s *ServerRepo) GetURL(id string) (string, error) {
 	return url, nil
 }
 
-func (s *ServerRepo) SaveUrls(t []byte) ([]byte, error) {
-	return nil, nil
+func (s *ServerRepo) SaveURLs(u map[string]string, baseURL string, userID string) (map[string]string, error) {
+	var us []urlInfo
+	for k, v := range u {
+		r := shorter.MakeShortner(v)
+		ui := urlInfo{
+			Shorten:  r,
+			Original: v,
+			CorID:    k,
+		}
+		u[k] = baseURL + r
+		us = append(us, ui)
+	}
+	if err := s.saveUrlsToDB(us, baseURL, userID); err != nil {
+		return u, err
+	}
+	return u, nil
 }
 
 func (s *ServerRepo) GetUserURLs(userEncID string) ([]global.URLs, error) {

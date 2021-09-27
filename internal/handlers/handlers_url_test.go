@@ -26,6 +26,11 @@ func (m *RepoMock) SaveURL(url, baseURL, userID string) (string, error) {
 	return args.String(0), args.Error(1)
 }
 
+func (m *RepoMock) SaveURLs(urls map[string]string, baseURL, userID string) (map[string]string, error) {
+	args := m.Called(urls, baseURL, userID)
+	return args.Get(0).(map[string]string), args.Error(1)
+}
+
 func (m *RepoMock) GetURL(id string) (string, error) {
 	args := m.Called(id)
 	return args.String(0), args.Error(1)

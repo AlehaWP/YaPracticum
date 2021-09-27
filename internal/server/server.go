@@ -20,14 +20,16 @@ func (s *Server) Start(repo global.Repository, opt global.Options) {
 	middlewares.NewCookie(repo)
 	r.Use(middlewares.SetCookieUser, middlewares.ZipHandlerRead, middlewares.ZipHandlerWrite)
 	//r.Use(middlewares.ZipHandlerRead, middlewares.ZipHandlerWrite)
-	r.Post("/", handlers.HandlerURLPost)
+
 	r.Get("/user/urls", handlers.HandlerUserPostURLs)
 	r.Get("/ping", handlers.HandlerCheckDBConnect)
 	r.Route("/{id}", func(r chi.Router) {
 		r.Use(middlewares.URLCtx)
 		r.Get("/", handlers.HandlerURLGet)
 	})
+	r.Post("/", handlers.HandlerURLPost)
 	r.Post("/api/shorten", handlers.HandlerAPIURLPost)
+	r.Post("/api/shorten/batch", handlers.HandlerAPIURLsPost)
 
 	s.Addr = opt.ServAddr()
 	s.Handler = r

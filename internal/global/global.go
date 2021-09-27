@@ -19,6 +19,7 @@ type Options interface {
 type Repository interface {
 	GetURL(string) (string, error)
 	SaveURL(string, string, string) (string, error)
+	SaveURLs(map[string]string, string, string) (map[string]string, error)
 	FindUser(string) bool
 	CreateUser() (string, error)
 	GetUserURLs(string) ([]URLs, error)

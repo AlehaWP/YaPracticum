@@ -39,9 +39,9 @@ func HandlerUserPostURLs(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
-func HandlerURLsPost(w http.ResponseWriter, r *http.Request) {
-	// ctx := r.Context()
-	// userID := ctx.Value(global.CtxString("UserID")).(string)
+func HandlerAPIURLsPost(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	userID := ctx.Value(global.CtxString("UserID")).(string)
 
 	text, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -62,12 +62,27 @@ func HandlerURLsPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	uts := make(map[string]string)
+	for _, u := range uJs {
+		uts[u.CorID] = u.OriginURL
+	}
+
+	uts, err = Repo.SaveURLs(uts, BaseURL, userID)
+
 	type uJR struct {
-		CorID     string `json:"correlation_id"`
-		OriginURL string `json:"short_url"`
+		CorID    string `json:"correlation_id"`
+		ShortURL string `json:"short_url"`
 	}
 
 	var uJsR []uJR
+
+	for key, value := range uts {
+		u := uJR{
+			CorID:    key,
+			ShortURL: value,
+		}
+		uJsR = append(uJsR, u)
+	}
 
 	res, err := json.Marshal(&uJsR)
 	if err != nil {
@@ -100,7 +115,7 @@ func HandlerURLPost(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
-	retURL, err := Repo.SaveURL(string(textBody), BaseURL+"/", userID)
+	retURL, err := Repo.SaveURL(string(textBody), BaseURL, userID)
 	if err != nil {
 		w.WriteHeader(400)
 		fmt.Println(err)
@@ -134,7 +149,7 @@ func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	su, err := Repo.SaveURL(tURLJson.URLLong, BaseURL+"/", userID)
+	su, err := Repo.SaveURL(tURLJson.URLLong, BaseURL, userID)
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(400)
@@ -175,6 +190,6 @@ func HandlerURLGet(w http.ResponseWriter, r *http.Request) {
 
 func NewHandlers(repo global.Repository, opt global.Options) {
 	Repo = repo
-	BaseURL = opt.RespBaseURL()
+	BaseURL = opt.RespBaseURL() + "/"
 	Opt = opt
 }
