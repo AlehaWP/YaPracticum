@@ -49,27 +49,27 @@ func HandlerURLsPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	type UrlJson struct {
+	type uJ struct {
 		CorID     string `json:"correlation_id"`
 		OriginURL string `json:"original_url"`
 	}
 
-	var UrlsJson []UrlJson
+	var uJs []uJ
 
-	err = json.Unmarshal(text, &UrlsJson)
+	err = json.Unmarshal(text, &uJs)
 	if err != nil {
 		w.WriteHeader(400)
 		return
 	}
 
-	type UrlJsonResp struct {
+	type uJR struct {
 		CorID     string `json:"correlation_id"`
 		OriginURL string `json:"short_url"`
 	}
 
-	var UrlsJsonResp []UrlJsonResp
+	var uJsR []uJR
 
-	res, err := json.Marshal(&UrlsJsonResp)
+	res, err := json.Marshal(&uJsR)
 	if err != nil {
 		w.WriteHeader(400)
 		return
