@@ -3,13 +3,16 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	encription "github.com/AlehaWP/YaPracticum.git/internal/Encription"
 	"github.com/AlehaWP/YaPracticum.git/internal/global"
 	"github.com/AlehaWP/YaPracticum.git/internal/shorter"
+	"github.com/lib/pq"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgerrcode"
 )
 
 var serializeURLRepo func(global.Repository)
@@ -42,6 +45,12 @@ func (s *ServerRepo) SaveURL(url, baseURL, userID string) (string, error) {
 	}
 	us := []urlInfo{u}
 	if err := s.saveUrlsToDB(us, baseURL, userID); err != nil {
+		var e *pq.Error
+		if errors.As(err, &e) {
+			if e.Code == pgerrcode.UniqueViolation {
+				return baseURL + r, errors.New("repeat")
+			}
+		}
 		return "", err
 	}
 	return baseURL + r, nil
@@ -74,6 +83,7 @@ func (s *ServerRepo) SaveURLs(u map[string]string, baseURL string, userID string
 		us = append(us, ui)
 	}
 	if err := s.saveUrlsToDB(us, baseURL, userID); err != nil {
+
 		return u, err
 	}
 	return u, nil

@@ -121,8 +121,13 @@ func HandlerURLPost(w http.ResponseWriter, r *http.Request) {
 	}
 	retURL, err := Repo.SaveURL(string(textBody), BaseURL, userID)
 	if err != nil {
+		if err.Error() == "repeat" {
+			w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
+			w.WriteHeader(409)
+			w.Write([]byte(retURL))
+			return
+		}
 		w.WriteHeader(400)
-		fmt.Println(err)
 		return
 	}
 	w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
@@ -132,6 +137,7 @@ func HandlerURLPost(w http.ResponseWriter, r *http.Request) {
 
 //HandlerAPIURLPost saves url from body request.
 func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
+	aSuccessCode := 201
 	ctx := r.Context()
 
 	userID := ctx.Value(global.CtxString("UserID")).(string)
@@ -155,9 +161,14 @@ func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
 
 	su, err := Repo.SaveURL(tURLJson.URLLong, BaseURL, userID)
 	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(400)
-		return
+		switch err.Error() {
+		case "repeat":
+			aSuccessCode = 409
+		default:
+			w.WriteHeader(400)
+			return
+		}
+
 	}
 	tResJSON := &struct {
 		URLShorten string `json:"result"`
@@ -167,12 +178,11 @@ func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
 
 	res, err := json.Marshal(tResJSON)
 	if err != nil {
-		fmt.Println(err)
 		w.WriteHeader(400)
 		return
 	}
 	w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
-	w.WriteHeader(201)
+	w.WriteHeader(aSuccessCode)
 	w.Write(res)
 }
 
