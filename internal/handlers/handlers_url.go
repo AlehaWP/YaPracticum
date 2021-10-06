@@ -19,23 +19,23 @@ func HandlerUserPostURLs(w http.ResponseWriter, r *http.Request) {
 
 	ud, err := Repo.GetUserURLs(userID)
 	if err != nil {
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	if len(ud) == 0 {
-		w.WriteHeader(204)
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
 	res, err := json.Marshal(ud)
 	if err != nil {
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 	w.Write(res)
 }
 
@@ -45,7 +45,7 @@ func HandlerAPIURLsPost(w http.ResponseWriter, r *http.Request) {
 
 	text, err := io.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -58,7 +58,7 @@ func HandlerAPIURLsPost(w http.ResponseWriter, r *http.Request) {
 
 	err = json.Unmarshal(text, &uJs)
 	if err != nil {
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -69,7 +69,7 @@ func HandlerAPIURLsPost(w http.ResponseWriter, r *http.Request) {
 
 	uts, err = Repo.SaveURLs(uts, BaseURL, userID)
 	if err != nil {
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -90,21 +90,21 @@ func HandlerAPIURLsPost(w http.ResponseWriter, r *http.Request) {
 
 	res, err := json.Marshal(&uJsR)
 	if err != nil {
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(201)
+	w.WriteHeader(http.StatusCreated)
 	w.Write(res)
 }
 
 func HandlerCheckDBConnect(w http.ResponseWriter, r *http.Request) {
 	if err := Repo.CheckDBConnection(); err != nil {
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 }
 
 // HandlerUrlPost saves url from request body to repository.
@@ -115,29 +115,29 @@ func HandlerURLPost(w http.ResponseWriter, r *http.Request) {
 	textBody, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		fmt.Println(err)
 		return
 	}
 	retURL, err := Repo.SaveURL(string(textBody), BaseURL, userID)
 	if err != nil {
-		if err.Error() == "repeat" {
+		if err.Error() == "conflict" {
 			w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
-			w.WriteHeader(409)
+			w.WriteHeader(http.StatusConflict)
 			w.Write([]byte(retURL))
 			return
 		}
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
-	w.WriteHeader(201)
+	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(retURL))
 }
 
 //HandlerAPIURLPost saves url from body request.
 func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
-	aSuccessCode := 201
+	aSuccessCode := http.StatusCreated
 	ctx := r.Context()
 
 	userID := ctx.Value(global.CtxString("UserID")).(string)
@@ -149,23 +149,23 @@ func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	if err != nil {
 		fmt.Println(err)
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	err = json.Unmarshal(textBody, tURLJson)
 	if err != nil {
 		fmt.Println(err)
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	su, err := Repo.SaveURL(tURLJson.URLLong, BaseURL, userID)
 	if err != nil {
 		switch err.Error() {
-		case "repeat":
-			aSuccessCode = 409
+		case "conflict":
+			aSuccessCode = http.StatusConflict
 		default:
-			w.WriteHeader(400)
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
@@ -178,7 +178,7 @@ func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
 
 	res, err := json.Marshal(tResJSON)
 	if err != nil {
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
@@ -193,13 +193,13 @@ func HandlerURLGet(w http.ResponseWriter, r *http.Request) {
 	id := ctx.Value(global.CtxString("url_id")).(string)
 	val, err := Repo.GetURL(id)
 	if err != nil {
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		io.WriteString(w, err.Error())
 		return
 	}
 	w.Header().Add("Location", val)
 	w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
-	w.WriteHeader(307)
+	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
 func NewHandlers(repo global.Repository, opt global.Options) {

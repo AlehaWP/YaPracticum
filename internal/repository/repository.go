@@ -48,7 +48,7 @@ func (s *ServerRepo) SaveURL(url, baseURL, userID string) (string, error) {
 		var e *pq.Error
 		if errors.As(err, &e) {
 			if e.Code == pgerrcode.UniqueViolation {
-				return baseURL + r, errors.New("repeat")
+				return baseURL + r, errors.New("conflict")
 			}
 		}
 		return "", err

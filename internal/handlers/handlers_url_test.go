@@ -103,13 +103,13 @@ func TestHandlerUrlGet(t *testing.T) {
 		"test1": {
 			"reqID":       "123123asdasd",
 			"result":      "www.example.com",
-			"resStatus":   307,
+			"resStatus":   http.StatusTemporaryRedirect,
 			"mockReturn1": "www.example.com",
 		},
 		"test2": {
 			"reqID":       "123123",
 			"result":      "",
-			"resStatus":   400,
+			"resStatus":   http.StatusBadRequest,
 			"mockReturn1": "",
 			"mockReturn2": errors.New("not found"),
 		},
@@ -150,7 +150,7 @@ func TestHandlerUrlPost(t *testing.T) {
 	res := w.Result()
 	b, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
-	assert.Equal(t, 201, res.StatusCode, "Не верный код ответа POST")
+	assert.Equal(t, http.StatusCreated, res.StatusCode, "Не верный код ответа POST")
 	assert.Equal(t, opt.RespBaseURL()+"/123123asdasd", string(b), "Не верный ответ POST")
 
 }
@@ -176,7 +176,7 @@ func TestHandlerApiUrlPost(t *testing.T) {
 	res := w.Result()
 	b, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
-	assert.Equal(t, 201, res.StatusCode, "Не верный код ответа POST")
+	assert.Equal(t, http.StatusCreated, res.StatusCode, "Не верный код ответа POST")
 	assert.Equal(t, `{"result":"`+opt.RespBaseURL()+`/123123asdasd"}`, string(b), "Не верный ответ POST")
 
 }
