@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/AlehaWP/YaPracticum.git/internal/global"
+	"github.com/AlehaWP/YaPracticum.git/internal/models"
 	"github.com/caarlos0/env/v6"
 )
 
@@ -75,7 +75,7 @@ func (d *defOptions) setFlags() {
 }
 
 // NewDefOptions return obj like Options interfase.
-func NewDefOptions() global.Options {
+func NewDefOptions() models.Options {
 	opt := new(defOptions)
 	opt.setFlags()
 	opt.checkEnv()

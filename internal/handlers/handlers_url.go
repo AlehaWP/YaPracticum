@@ -6,46 +6,54 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/AlehaWP/YaPracticum.git/internal/global"
+	"github.com/AlehaWP/YaPracticum.git/internal/models"
 )
 
-var Repo global.Repository
+var Repo models.Repository
 var BaseURL string
-var Opt global.Options
+var Opt models.Options
 
 func HandlerUserPostURLs(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	userID := ctx.Value(global.CtxString("UserID")).(string)
+	userID, ok := ctx.Value(models.UserKey).(string)
+	if !ok {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	ud, err := Repo.GetUserURLs(userID)
 	if err != nil {
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	if len(ud) == 0 {
-		w.WriteHeader(204)
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
 	res, err := json.Marshal(ud)
 	if err != nil {
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 	w.Write(res)
 }
 
 func HandlerAPIURLsPost(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	userID := ctx.Value(global.CtxString("UserID")).(string)
+	userID, ok := ctx.Value(models.UserKey).(string)
+	if !ok {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	text, err := io.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -58,7 +66,7 @@ func HandlerAPIURLsPost(w http.ResponseWriter, r *http.Request) {
 
 	err = json.Unmarshal(text, &uJs)
 	if err != nil {
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -69,7 +77,7 @@ func HandlerAPIURLsPost(w http.ResponseWriter, r *http.Request) {
 
 	uts, err = Repo.SaveURLs(uts, BaseURL, userID)
 	if err != nil {
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -90,51 +98,65 @@ func HandlerAPIURLsPost(w http.ResponseWriter, r *http.Request) {
 
 	res, err := json.Marshal(&uJsR)
 	if err != nil {
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(201)
+	w.WriteHeader(http.StatusCreated)
 	w.Write(res)
 }
 
 func HandlerCheckDBConnect(w http.ResponseWriter, r *http.Request) {
 	if err := Repo.CheckDBConnection(); err != nil {
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 }
 
 // HandlerUrlPost saves url from request body to repository.
 func HandlerURLPost(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	userID := ctx.Value(global.CtxString("UserID")).(string)
+	userID, ok := ctx.Value(models.UserKey).(string)
+	if !ok {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	textBody, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		fmt.Println(err)
 		return
 	}
 	retURL, err := Repo.SaveURL(string(textBody), BaseURL, userID)
 	if err != nil {
-		w.WriteHeader(400)
-		fmt.Println(err)
+		if err == models.ErrConflictInsert {
+			w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
+			w.WriteHeader(http.StatusConflict)
+			w.Write([]byte(retURL))
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
-	w.WriteHeader(201)
+	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(retURL))
 }
 
 //HandlerAPIURLPost saves url from body request.
 func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
+	aSuccessCode := http.StatusCreated
 	ctx := r.Context()
 
-	userID := ctx.Value(global.CtxString("UserID")).(string)
+	userID, ok := ctx.Value(models.UserKey).(string)
+	if !ok {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	tURLJson := &struct {
 		URLLong string `json:"url"`
@@ -143,21 +165,26 @@ func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	if err != nil {
 		fmt.Println(err)
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	err = json.Unmarshal(textBody, tURLJson)
 	if err != nil {
 		fmt.Println(err)
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	su, err := Repo.SaveURL(tURLJson.URLLong, BaseURL, userID)
 	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(400)
-		return
+		switch err {
+		case models.ErrConflictInsert:
+			aSuccessCode = http.StatusConflict
+		default:
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
 	}
 	tResJSON := &struct {
 		URLShorten string `json:"result"`
@@ -167,12 +194,11 @@ func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
 
 	res, err := json.Marshal(tResJSON)
 	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
-	w.WriteHeader(201)
+	w.WriteHeader(aSuccessCode)
 	w.Write(res)
 }
 
@@ -180,19 +206,24 @@ func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
 func HandlerURLGet(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	id := ctx.Value(global.CtxString("url_id")).(string)
+	id, ok := ctx.Value(models.URLID).(string)
+	if !ok {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	val, err := Repo.GetURL(id)
 	if err != nil {
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		io.WriteString(w, err.Error())
 		return
 	}
 	w.Header().Add("Location", val)
 	w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
-	w.WriteHeader(307)
+	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func NewHandlers(repo global.Repository, opt global.Options) {
+func NewHandlers(repo models.Repository, opt models.Options) {
 	Repo = repo
 	BaseURL = opt.RespBaseURL() + "/"
 	Opt = opt

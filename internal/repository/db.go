@@ -30,8 +30,10 @@ func (s *ServerRepo) saveUrlsToDB(us []urlInfo, baseURL, userID string) error {
 		url,
 		base_url,
 		user_id
-	  ) VALUES ($1,$2,$3,$4,(SELECT COALESCE(id, 0) FROM users where user_enc_id=$5))
-	  ON CONFLICT (correlation_id) DO NOTHING`
+	  ) VALUES ($1,$2,$3,$4,(SELECT COALESCE(id, 0) FROM users where user_enc_id=$5))`
+	if len(us) > 1 {
+		q += ` ON CONFLICT (url) DO NOTHING`
+	}
 
 	pc, err := t.PrepareContext(ctx, q)
 	if err != nil {
@@ -83,9 +85,9 @@ func (s *ServerRepo) createTables() error {
 
 	q = `CREATE TABLE IF NOT EXISTS urls (
 		id SERIAL NOT NULL,
-		correlation_id VARCHAR(36) UNIQUE,  
+		correlation_id VARCHAR(36),  
 		shorten_url VARCHAR(32),
-		url VARCHAR(255),
+		url VARCHAR(255) UNIQUE,
 		base_url VARCHAR(255),
 		user_id INTEGER REFERENCES users (id),
 		date_add TIMESTAMPTZ NOT NULL DEFAULT NOW()

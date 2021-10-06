@@ -3,9 +3,9 @@ package server
 import (
 	"net/http"
 
-	"github.com/AlehaWP/YaPracticum.git/internal/global"
 	"github.com/AlehaWP/YaPracticum.git/internal/handlers"
 	"github.com/AlehaWP/YaPracticum.git/internal/middlewares"
+	"github.com/AlehaWP/YaPracticum.git/internal/models"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -14,7 +14,7 @@ type Server struct {
 }
 
 //Start server with router.
-func (s *Server) Start(repo global.Repository, opt global.Options) {
+func (s *Server) Start(repo models.Repository, opt models.Options) {
 	r := chi.NewRouter()
 	handlers.NewHandlers(repo, opt)
 	middlewares.NewCookie(repo)
