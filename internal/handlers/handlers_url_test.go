@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/AlehaWP/YaPracticum.git/internal/global"
+	"github.com/AlehaWP/YaPracticum.git/internal/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -52,7 +52,7 @@ func (m *RepoMock) CreateUser() (string, error) {
 	return "", nil
 }
 
-func (m *RepoMock) GetUserURLs(string) ([]global.URLs, error) {
+func (m *RepoMock) GetUserURLs(string) ([]models.URLs, error) {
 	return nil, nil
 }
 
@@ -95,7 +95,7 @@ func newOptsMock() *OptsMock {
 
 var repoMock *RepoMock
 var optsMock *OptsMock
-var opt global.Options
+var opt models.Options
 
 func TestHandlerUrlGet(t *testing.T) {
 	InitMocks()
@@ -127,7 +127,7 @@ func TestHandlerUrlGet(t *testing.T) {
 
 		r := httptest.NewRequest("GET", "/"+value["reqID"].(string), strings.NewReader(""))
 		w := httptest.NewRecorder()
-		ctx := context.WithValue(context.Background(), global.CtxString("url_id"), value["reqID"].(string))
+		ctx := context.WithValue(context.Background(), models.URLID, value["reqID"].(string))
 		handler.ServeHTTP(w, r.WithContext(ctx))
 
 		res := w.Result()
@@ -144,7 +144,7 @@ func TestHandlerUrlPost(t *testing.T) {
 	r := httptest.NewRequest("POST", "http://localhost:8080", strings.NewReader("www.example.com"))
 	w := httptest.NewRecorder()
 
-	ctx := context.WithValue(context.Background(), global.CtxString("UserID"), "asdasd")
+	ctx := context.WithValue(context.Background(), models.UserKey, "asdasd")
 	handler.ServeHTTP(w, r.WithContext(ctx))
 
 	res := w.Result()
@@ -171,7 +171,7 @@ func TestHandlerApiUrlPost(t *testing.T) {
 	r := httptest.NewRequest("POST", "http://localhost:8080", bytes.NewBuffer(bOut))
 	w := httptest.NewRecorder()
 
-	ctx := context.WithValue(context.Background(), global.CtxString("UserID"), "aasdasdSQW")
+	ctx := context.WithValue(context.Background(), models.UserKey, "aasdasdSQW")
 	handler.ServeHTTP(w, r.WithContext(ctx))
 	res := w.Result()
 	b, _ := io.ReadAll(res.Body)

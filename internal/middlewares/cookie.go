@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/AlehaWP/YaPracticum.git/internal/global"
+	"github.com/AlehaWP/YaPracticum.git/internal/models"
 )
 
-var Repo global.Repository
+var Repo models.Repository
 
 func SetCookieUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -32,11 +32,11 @@ func SetCookieUser(next http.Handler) http.Handler {
 		}
 		http.SetCookie(w, c)
 
-		ctx := context.WithValue(r.Context(), global.CtxString("UserID"), cv)
+		ctx := context.WithValue(r.Context(), models.UserKey, cv)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
-func NewCookie(repo global.Repository) {
+func NewCookie(repo models.Repository) {
 	Repo = repo
 }

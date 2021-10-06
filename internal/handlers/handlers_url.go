@@ -6,16 +6,20 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/AlehaWP/YaPracticum.git/internal/global"
+	"github.com/AlehaWP/YaPracticum.git/internal/models"
 )
 
-var Repo global.Repository
+var Repo models.Repository
 var BaseURL string
-var Opt global.Options
+var Opt models.Options
 
 func HandlerUserPostURLs(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	userID := ctx.Value(global.CtxString("UserID")).(string)
+	userID, ok := ctx.Value(models.UserKey).(string)
+	if !ok {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	ud, err := Repo.GetUserURLs(userID)
 	if err != nil {
@@ -41,7 +45,11 @@ func HandlerUserPostURLs(w http.ResponseWriter, r *http.Request) {
 
 func HandlerAPIURLsPost(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	userID := ctx.Value(global.CtxString("UserID")).(string)
+	userID, ok := ctx.Value(models.UserKey).(string)
+	if !ok {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	text, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -110,7 +118,11 @@ func HandlerCheckDBConnect(w http.ResponseWriter, r *http.Request) {
 // HandlerUrlPost saves url from request body to repository.
 func HandlerURLPost(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	userID := ctx.Value(global.CtxString("UserID")).(string)
+	userID, ok := ctx.Value(models.UserKey).(string)
+	if !ok {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	textBody, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -121,7 +133,7 @@ func HandlerURLPost(w http.ResponseWriter, r *http.Request) {
 	}
 	retURL, err := Repo.SaveURL(string(textBody), BaseURL, userID)
 	if err != nil {
-		if err.Error() == "conflict" {
+		if err == models.ErrConflictInsert {
 			w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
 			w.WriteHeader(http.StatusConflict)
 			w.Write([]byte(retURL))
@@ -140,7 +152,11 @@ func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
 	aSuccessCode := http.StatusCreated
 	ctx := r.Context()
 
-	userID := ctx.Value(global.CtxString("UserID")).(string)
+	userID, ok := ctx.Value(models.UserKey).(string)
+	if !ok {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	tURLJson := &struct {
 		URLLong string `json:"url"`
@@ -161,8 +177,8 @@ func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
 
 	su, err := Repo.SaveURL(tURLJson.URLLong, BaseURL, userID)
 	if err != nil {
-		switch err.Error() {
-		case "conflict":
+		switch err {
+		case models.ErrConflictInsert:
 			aSuccessCode = http.StatusConflict
 		default:
 			w.WriteHeader(http.StatusBadRequest)
@@ -190,7 +206,12 @@ func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
 func HandlerURLGet(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	id := ctx.Value(global.CtxString("url_id")).(string)
+	id, ok := ctx.Value(models.URLID).(string)
+	if !ok {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	val, err := Repo.GetURL(id)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -202,7 +223,7 @@ func HandlerURLGet(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func NewHandlers(repo global.Repository, opt global.Options) {
+func NewHandlers(repo models.Repository, opt models.Options) {
 	Repo = repo
 	BaseURL = opt.RespBaseURL() + "/"
 	Opt = opt

@@ -4,14 +4,14 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/AlehaWP/YaPracticum.git/internal/global"
+	"github.com/AlehaWP/YaPracticum.git/internal/models"
 	"github.com/go-chi/chi/v5"
 )
 
 // UrlCtx for parameter transfer without direct access to router .
 func URLCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), global.CtxString("url_id"), chi.URLParam(r, "id"))
+		ctx := context.WithValue(r.Context(), models.URLID, chi.URLParam(r, "id"))
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

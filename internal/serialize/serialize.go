@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/AlehaWP/YaPracticum.git/internal/global"
+	"github.com/AlehaWP/YaPracticum.git/internal/models"
 )
 
 type reader struct {
@@ -57,7 +57,7 @@ var r *reader
 var fileNametoSave string
 
 // SaveURLSToFile save local db to file.
-func SaveRepoToFile(rep global.Repository) {
+func SaveRepoToFile(rep models.Repository) {
 	var err error
 	w, err = newWriter(fileNametoSave)
 	if err != nil {
@@ -68,7 +68,7 @@ func SaveRepoToFile(rep global.Repository) {
 }
 
 // ReadURLSFromFile read from local file to local base.
-func ReadRepoFromFile(rep global.Repository) {
+func ReadRepoFromFile(rep models.Repository) {
 	r.decoder.Decode(rep)
 	r.Close()
 }
