@@ -59,7 +59,7 @@ func (s *ServerRepo) saveUrlsToDB(us []urlInfo, baseURL, userID string) error {
 
 }
 
-func (s *ServerRepo) setUrlsToDel(us []urlInfo, baseURL, userID string) error {
+func (s *ServerRepo) setUrlsToDel(us []string, userID int) error {
 	db := s.db
 	ctx, cancelfunc := context.WithTimeout(s.ctx, 30*time.Second)
 	defer cancelfunc()
@@ -70,7 +70,7 @@ func (s *ServerRepo) setUrlsToDel(us []urlInfo, baseURL, userID string) error {
 	}
 	defer t.Rollback()
 
-	q := `UPDATE urls SET for_delete = 1 WHERE correlation_id=$1 and user_id = (SELECT COALESCE(id, 0) FROM users where user_enc_id=$2))`
+	q := `UPDATE urls SET for_delete = true WHERE correlation_id=$1 and user_id = $2`
 
 	pc, err := t.PrepareContext(ctx, q)
 	if err != nil {
@@ -78,9 +78,9 @@ func (s *ServerRepo) setUrlsToDel(us []urlInfo, baseURL, userID string) error {
 	}
 	defer pc.Close()
 
-	for _, u := range us {
+	for _, v := range us {
 		if _, err := pc.ExecContext(ctx,
-			u.CorID,
+			v,
 			userID,
 		); err != nil {
 			return err

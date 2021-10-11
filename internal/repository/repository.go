@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	encription "github.com/AlehaWP/YaPracticum.git/internal/Encription"
@@ -95,6 +96,10 @@ func (s *ServerRepo) SetURLsToDel(d []string, userID string) error {
 	row := db.QueryRowContext(ctx, q, userID)
 
 	if err := row.Scan(&id); err != nil {
+		return err
+	}
+	fmt.Println(id)
+	if err := s.setUrlsToDel(d, id); err != nil {
 		return err
 	}
 
