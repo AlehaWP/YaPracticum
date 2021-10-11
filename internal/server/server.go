@@ -30,6 +30,7 @@ func (s *Server) Start(repo models.Repository, opt models.Options) {
 	r.Post("/", handlers.HandlerURLPost)
 	r.Post("/api/shorten", handlers.HandlerAPIURLPost)
 	r.Post("/api/shorten/batch", handlers.HandlerAPIURLsPost)
+	r.Delete("/api/user/urls", handlers.HandlerDeleteUserUrls)
 
 	s.Addr = opt.ServAddr()
 	s.Handler = r

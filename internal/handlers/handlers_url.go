@@ -223,6 +223,42 @@ func HandlerURLGet(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
+func HandlerDeleteUserUrls(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	userID, ok := ctx.Value(models.UserKey).(string)
+
+	if !ok {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	text, err := io.ReadAll(r.Body)
+	defer r.Body.Close()
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	dList := new([]string)
+
+	err = json.Unmarshal(text, dList)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = Repo.SetURLsToDel(*dList, userID)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Println(err)
+		return
+	}
+
+	w.WriteHeader(http.StatusAccepted)
+}
+
 func NewHandlers(repo models.Repository, opt models.Options) {
 	Repo = repo
 	BaseURL = opt.RespBaseURL() + "/"

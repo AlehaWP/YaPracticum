@@ -14,4 +14,5 @@ type Repository interface {
 	CreateUser() (string, error)
 	GetUserURLs(string) ([]URLs, error)
 	CheckDBConnection() error
+	SetURLsToDel([]string, string) error
 }

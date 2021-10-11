@@ -60,6 +60,10 @@ func (m *RepoMock) CheckDBConnection() error {
 	return nil
 }
 
+func (m *RepoMock) SetURLsToDel([]string, string) error {
+	return nil
+}
+
 type OptsMock struct {
 	mock.Mock
 }

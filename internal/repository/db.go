@@ -59,6 +59,40 @@ func (s *ServerRepo) saveUrlsToDB(us []urlInfo, baseURL, userID string) error {
 
 }
 
+func (s *ServerRepo) setUrlsToDel(us []urlInfo, baseURL, userID string) error {
+	db := s.db
+	ctx, cancelfunc := context.WithTimeout(s.ctx, 30*time.Second)
+	defer cancelfunc()
+
+	t, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer t.Rollback()
+
+	q := `UPDATE urls SET for_delete = 1 WHERE correlation_id=$1 and user_id = (SELECT COALESCE(id, 0) FROM users where user_enc_id=$2))`
+
+	pc, err := t.PrepareContext(ctx, q)
+	if err != nil {
+		return err
+	}
+	defer pc.Close()
+
+	for _, u := range us {
+		if _, err := pc.ExecContext(ctx,
+			u.CorID,
+			userID,
+		); err != nil {
+			return err
+		}
+	}
+
+	t.Commit()
+
+	return nil
+
+}
+
 //CheckDBConnection trying connect to db.
 func (s *ServerRepo) CheckDBConnection() error {
 	err := s.db.PingContext(context.Background())
@@ -90,7 +124,8 @@ func (s *ServerRepo) createTables() error {
 		url VARCHAR(255) UNIQUE,
 		base_url VARCHAR(255),
 		user_id INTEGER REFERENCES users (id),
-		date_add TIMESTAMPTZ NOT NULL DEFAULT NOW()
+		date_add TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+		for_delete BOOLEAN DEFAULT false
 	)`
 	if _, err := db.ExecContext(ctx, q); err != nil {
 		return err

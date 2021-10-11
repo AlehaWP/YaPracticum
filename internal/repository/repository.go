@@ -70,6 +70,37 @@ func (s *ServerRepo) GetURL(id string) (string, error) {
 	return url, nil
 }
 
+// func (s *ServerRepo) SetURLsToDel(d []string, userID string) error {
+
+// 	db := s.db
+// 	ctx, cancelfunc := context.WithTimeout(s.ctx, 5*time.Second)
+// 	defer cancelfunc()
+// 	q := `UPDATE urls SET
+// 	      for_delete = true
+// 		  from (SELECT unnest($1::varchar(36)[]) as cor_id, (SELECT COALESCE(id, 0) FROM users where user_enc_id=$2) as user_id) as del_data
+// 		  WHERE del_data.cor_id = urls.correlation_id and del_data.user_id=urls.user_id
+// 	`
+// 	if _, err := db.ExecContext(ctx, q, d, userID); err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
+
+func (s *ServerRepo) SetURLsToDel(d []string, userID string) error {
+	db := s.db
+	ctx, cancelfunc := context.WithTimeout(s.ctx, 5*time.Second)
+	defer cancelfunc()
+	q := `SELECT id FROM users WHERE user_enc_id=$1`
+	var id int
+	row := db.QueryRowContext(ctx, q, userID)
+
+	if err := row.Scan(&id); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *ServerRepo) SaveURLs(u map[string]string, baseURL string, userID string) (map[string]string, error) {
 	var us []urlInfo
 	for k, v := range u {
