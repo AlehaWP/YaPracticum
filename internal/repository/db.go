@@ -10,6 +10,7 @@ import (
 
 //CheckDBConnection trying connect to db.
 func (s *ServerRepo) Close() {
+	s.cancel()
 	s.db.Close()
 }
 
@@ -59,7 +60,7 @@ func (s *ServerRepo) saveUrlsToDB(us []urlInfo, baseURL, userID string) error {
 
 }
 
-func (s *ServerRepo) setUrlsToDel(us []string, userID int) error {
+func (s *ServerRepo) setUrlsToDelfromBuf() error {
 	db := s.db
 	ctx, cancelfunc := context.WithTimeout(s.ctx, 30*time.Second)
 	defer cancelfunc()
@@ -78,16 +79,18 @@ func (s *ServerRepo) setUrlsToDel(us []string, userID int) error {
 	}
 	defer pc.Close()
 
-	for _, v := range us {
+	for _, v := range s.dBuf {
 		if _, err := pc.ExecContext(ctx,
-			v,
-			userID,
+			v.url,
+			v.id,
 		); err != nil {
 			return err
 		}
 	}
 
 	t.Commit()
+
+	s.dBuf = s.dBuf[:0]
 
 	return nil
 
@@ -134,14 +137,19 @@ func (s *ServerRepo) createTables() error {
 }
 
 func NewServerRepo(c string) (*ServerRepo, error) {
+	delCh = make(chan delBufRow, 100)
 	db, err := sql.Open("postgres", c)
 	if err != nil {
 		return nil, err
 	}
+
+	ctx, cancel := context.WithCancel(context.Background())
 	sr := &ServerRepo{
 		connStr: c,
 		db:      db,
-		ctx:     context.Background(),
+		ctx:     ctx,
+		cancel:  cancel,
+		dBuf:    make([]delBufRow, 0, 1000),
 	}
 	if err := sr.CheckDBConnection(); err != nil {
 		return nil, err

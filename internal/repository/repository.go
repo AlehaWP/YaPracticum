@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"time"
 
 	encription "github.com/AlehaWP/YaPracticum.git/internal/Encription"
@@ -18,11 +17,22 @@ import (
 
 var serializeURLRepo func(models.Repository)
 
+type delBufRow struct {
+	url string
+	id  int
+}
+
+var delCh chan delBufRow
+
+type delBuf []delBufRow
+
 //UrlsData repository of urls. Realize Repository interface.
 type ServerRepo struct {
 	connStr string
 	db      *sql.DB
 	ctx     context.Context
+	cancel  context.CancelFunc
+	dBuf    delBuf
 }
 
 type UsersRepo struct {
@@ -91,6 +101,7 @@ func (s *ServerRepo) SetURLsToDel(d []string, userID string) error {
 	db := s.db
 	ctx, cancelfunc := context.WithTimeout(s.ctx, 5*time.Second)
 	defer cancelfunc()
+
 	q := `SELECT id FROM users WHERE user_enc_id=$1`
 	var id int
 	row := db.QueryRowContext(ctx, q, userID)
@@ -98,13 +109,32 @@ func (s *ServerRepo) SetURLsToDel(d []string, userID string) error {
 	if err := row.Scan(&id); err != nil {
 		return err
 	}
-	fmt.Println(id)
-	if err := s.setUrlsToDel(d, id); err != nil {
-		return err
+
+	for _, v := range d {
+		delCh <- delBufRow{v, id}
 	}
 
 	return nil
 }
+
+func (s *ServerRepo) addToDelBuff(ctx context.Context, ch chan delBufRow) {
+	timer := time.NewTimer(5 * time.Second)
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-timer.C:
+			s.setUrlsToDelfromBuf()
+		case v := <-ch:
+			s.dBuf = append(s.dBuf, v)
+			if cap(s.dBuf) == len(s.dBuf) {
+				s.setUrlsToDelfromBuf()
+			}
+		}
+	}
+}
+
+// func (s *ServerRepo) AddTo
 
 func (s *ServerRepo) SaveURLs(u map[string]string, baseURL string, userID string) (map[string]string, error) {
 	var us []urlInfo
