@@ -109,10 +109,11 @@ func (s *ServerRepo) SetURLsToDel(d []string, userID string) error {
 	if err := row.Scan(&id); err != nil {
 		return err
 	}
-
-	for _, v := range d {
-		delCh <- delBufRow{v, id}
-	}
+	go func() {
+		for _, v := range d {
+			delCh <- delBufRow{v, id}
+		}
+	}()
 
 	return nil
 }
