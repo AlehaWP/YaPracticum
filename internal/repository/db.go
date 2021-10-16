@@ -158,5 +158,7 @@ func NewServerRepo(c string) (*ServerRepo, error) {
 	if err := sr.createTables(); err != nil {
 		return nil, err
 	}
+
+	go sr.addToDelBuff(delCh)
 	return sr, nil
 }

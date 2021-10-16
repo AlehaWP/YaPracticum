@@ -214,6 +214,10 @@ func HandlerURLGet(w http.ResponseWriter, r *http.Request) {
 
 	val, err := Repo.GetURL(id)
 	if err != nil {
+		if err == models.ErrUrlSetToDel {
+			w.WriteHeader(http.StatusGone)
+			return
+		}
 		w.WriteHeader(http.StatusBadRequest)
 		io.WriteString(w, err.Error())
 		return

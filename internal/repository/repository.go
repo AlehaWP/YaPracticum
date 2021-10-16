@@ -71,12 +71,16 @@ func (s *ServerRepo) GetURL(id string) (string, error) {
 	db := s.db
 	ctx, cancelfunc := context.WithTimeout(s.ctx, 5*time.Second)
 	defer cancelfunc()
-	q := `SELECT url FROM urls WHERE shorten_url=$1`
+	q := `SELECT url, for_delete FROM urls WHERE shorten_url=$1`
 	var url string
+	var forD bool
 	row := db.QueryRowContext(ctx, q, id)
 
-	if err := row.Scan(&url); err != nil {
+	if err := row.Scan(&url, &forD); err != nil {
 		return "", err
+	}
+	if forD {
+		return "", models.ErrUrlSetToDel
 	}
 	return url, nil
 }
@@ -118,14 +122,15 @@ func (s *ServerRepo) SetURLsToDel(d []string, userID string) error {
 	return nil
 }
 
-func (s *ServerRepo) addToDelBuff(ctx context.Context, ch chan delBufRow) {
+func (s *ServerRepo) addToDelBuff(ch chan delBufRow) {
 	timer := time.NewTimer(5 * time.Second)
 	for {
 		select {
-		case <-ctx.Done():
+		case <-s.ctx.Done():
 			return
 		case <-timer.C:
 			s.setUrlsToDelfromBuf()
+			timer.Reset(5 * time.Second)
 		case v := <-ch:
 			s.dBuf = append(s.dBuf, v)
 			if cap(s.dBuf) == len(s.dBuf) {
