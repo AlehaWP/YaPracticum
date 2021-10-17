@@ -123,7 +123,8 @@ func (s *ServerRepo) SetURLsToDel(d []string, userID string) error {
 }
 
 func (s *ServerRepo) addURLToDel(ch chan delBufRow) {
-	timer := time.NewTimer(250 * time.Millisecond)
+	tP := 1 * time.Second
+	timer := time.NewTimer(tP)
 	timerCounter := 0
 	for {
 		select {
@@ -138,7 +139,7 @@ func (s *ServerRepo) addURLToDel(ch chan delBufRow) {
 				timerCounter = 0
 			}
 			s.setUrlsToDelfromBuf()
-			timer.Reset(250 * time.Millisecond)
+			timer.Reset(tP)
 		case v := <-ch:
 			s.dBuf = append(s.dBuf, v)
 			if cap(s.dBuf) == len(s.dBuf) {

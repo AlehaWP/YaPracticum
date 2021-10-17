@@ -72,7 +72,9 @@ func (s *ServerRepo) setUrlsToDelfromBuf() error {
 	}
 	defer t.Rollback()
 
-	q := `UPDATE urls SET for_delete = true WHERE correlation_id=$1 and user_id = $2`
+	// q := `UPDATE urls SET for_delete = true WHERE correlation_id=$1 and user_id = $2`
+
+	q := `UPDATE urls SET for_delete = true WHERE shorten_url=$1 and user_id = $2`
 
 	pc, err := t.PrepareContext(ctx, q)
 	if err != nil {
