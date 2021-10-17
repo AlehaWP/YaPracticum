@@ -138,7 +138,7 @@ func (s *ServerRepo) addURLToDel(ch chan delBufRow) {
 				timerCounter = 0
 			}
 			s.setUrlsToDelfromBuf()
-			timer.Reset(5 * time.Second)
+			timer.Reset(250 * time.Millisecond)
 		case v := <-ch:
 			s.dBuf = append(s.dBuf, v)
 			if cap(s.dBuf) == len(s.dBuf) {
