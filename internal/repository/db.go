@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -96,9 +97,22 @@ func (s *ServerRepo) setUrlsToDelfromBuf() error {
 
 }
 
+func (s *ServerRepo) delUrls() {
+	db := s.db
+	ctx, cancelFunc := context.WithTimeout(s.ctx, 10*time.Second)
+	defer cancelFunc()
+
+	q := `DELETE FROM URLS WHERE for_delete=true`
+
+	if _, err := db.ExecContext(ctx, q); err != nil {
+		fmt.Println("Ошибка удаления URL: ", err.Error())
+	}
+
+}
+
 //CheckDBConnection trying connect to db.
 func (s *ServerRepo) CheckDBConnection() error {
-	err := s.db.PingContext(context.Background())
+	err := s.db.PingContext(s.ctx)
 	if err != nil {
 		return err
 	}
@@ -107,7 +121,7 @@ func (s *ServerRepo) CheckDBConnection() error {
 
 func (s *ServerRepo) createTables() error {
 	db := s.db
-	ctx, cancelFunc := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancelFunc := context.WithTimeout(s.ctx, 10*time.Second)
 	defer cancelFunc()
 
 	q := `CREATE TABLE IF NOT EXISTS users (
@@ -159,6 +173,6 @@ func NewServerRepo(c string) (*ServerRepo, error) {
 		return nil, err
 	}
 
-	go sr.addToDelBuff(delCh)
+	go sr.addURLToDel(delCh)
 	return sr, nil
 }

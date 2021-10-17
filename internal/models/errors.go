@@ -5,4 +5,4 @@ import (
 )
 
 var ErrConflictInsert error = errors.New("conflict")
-var ErrUrlSetToDel error = errors.New("conflict")
+var ErrURLSetToDel error = errors.New("url set to delete")

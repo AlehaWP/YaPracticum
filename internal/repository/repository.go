@@ -80,7 +80,7 @@ func (s *ServerRepo) GetURL(id string) (string, error) {
 		return "", err
 	}
 	if forD {
-		return "", models.ErrUrlSetToDel
+		return "", models.ErrURLSetToDel
 	}
 	return url, nil
 }
@@ -122,13 +122,19 @@ func (s *ServerRepo) SetURLsToDel(d []string, userID string) error {
 	return nil
 }
 
-func (s *ServerRepo) addToDelBuff(ch chan delBufRow) {
+func (s *ServerRepo) addURLToDel(ch chan delBufRow) {
 	timer := time.NewTimer(5 * time.Second)
+	timerCounter := 0
 	for {
 		select {
 		case <-s.ctx.Done():
 			return
 		case <-timer.C:
+			timerCounter += 1
+			if timerCounter == 3 {
+				s.delUrls()
+				timerCounter = 0
+			}
 			s.setUrlsToDelfromBuf()
 			timer.Reset(5 * time.Second)
 		case v := <-ch:
