@@ -99,7 +99,7 @@ func (s *ServerRepo) setUrlsToDelfromBuf() error {
 
 func (s *ServerRepo) delUrls() {
 	db := s.db
-	ctx, cancelFunc := context.WithTimeout(s.ctx, 10*time.Second)
+	ctx, cancelFunc := context.WithTimeout(s.ctx, 20*time.Second)
 	defer cancelFunc()
 
 	q := `DELETE FROM URLS WHERE for_delete=true`
