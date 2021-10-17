@@ -123,11 +123,13 @@ func (s *ServerRepo) SetURLsToDel(d []string, userID string) error {
 }
 
 func (s *ServerRepo) addURLToDel(ch chan delBufRow) {
-	timer := time.NewTimer(1 * time.Second)
+	timer := time.NewTimer(5 * time.Second)
 	timerCounter := 0
 	for {
 		select {
 		case <-s.ctx.Done():
+			s.ctx = context.Background()
+			s.delUrls()
 			return
 		case <-timer.C:
 			timerCounter += 1

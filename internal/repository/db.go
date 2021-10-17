@@ -150,14 +150,14 @@ func (s *ServerRepo) createTables() error {
 	return nil
 }
 
-func NewServerRepo(c string) (*ServerRepo, error) {
+func NewServerRepo(mCtx context.Context, c string) (*ServerRepo, error) {
 	delCh = make(chan delBufRow, 100)
 	db, err := sql.Open("postgres", c)
 	if err != nil {
 		return nil, err
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(mCtx)
 	sr := &ServerRepo{
 		connStr: c,
 		db:      db,
