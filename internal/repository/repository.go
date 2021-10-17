@@ -131,7 +131,7 @@ func (s *ServerRepo) addURLToDel(ch chan delBufRow) {
 			return
 		case <-timer.C:
 			timerCounter += 1
-			if timerCounter == 3 {
+			if timerCounter == 2 {
 				s.delUrls()
 				timerCounter = 0
 			}
