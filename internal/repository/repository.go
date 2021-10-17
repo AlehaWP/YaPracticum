@@ -129,12 +129,12 @@ func (s *ServerRepo) addURLToDel(ch chan delBufRow) {
 		select {
 		case <-s.ctx.Done():
 			s.ctx = context.Background()
-			//s.delUrls()
+			s.delUrls()
 			return
 		case <-timer.C:
 			timerCounter += 1
-			if timerCounter == 2 {
-				//s.delUrls()
+			if timerCounter == 4 {
+				s.delUrls()
 				timerCounter = 0
 			}
 			s.setUrlsToDelfromBuf()
