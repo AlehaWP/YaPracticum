@@ -160,7 +160,6 @@ func NewServerRepo(ctx context.Context, c string) (*ServerRepo, error) {
 	}
 
 	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
 
 	sr := &ServerRepo{
 		connStr: c,
