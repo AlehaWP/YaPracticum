@@ -21,7 +21,7 @@ func HandlerUserPostURLs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ud, err := Repo.GetUserURLs(userID)
+	ud, err := Repo.GetUserURLs(ctx, userID)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -108,7 +108,7 @@ func HandlerAPIURLsPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandlerCheckDBConnect(w http.ResponseWriter, r *http.Request) {
-	if err := Repo.CheckDBConnection(); err != nil {
+	if err := Repo.CheckDBConnection(r.Context()); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -253,7 +253,7 @@ func HandlerDeleteUserUrls(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = Repo.SetURLsToDel(*dList, userID)
+	err = Repo.SetURLsToDel(ctx, *dList, userID)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Println(err)

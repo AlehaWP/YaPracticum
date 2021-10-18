@@ -61,9 +61,9 @@ func (s *ServerRepo) saveUrlsToDB(ctx context.Context, us []urlInfo, baseURL, us
 
 }
 
-func (s *ServerRepo) setUrlsToDelfromBuf() error {
+func (s *ServerRepo) setUrlsToDelfromBuf(ctx context.Context) error {
 	db := s.db
-	ctx, cancelfunc := context.WithTimeout(s.ctx, 30*time.Second)
+	ctx, cancelfunc := context.WithTimeout(ctx, 30*time.Second)
 	defer cancelfunc()
 
 	t, err := db.Begin()
@@ -99,9 +99,9 @@ func (s *ServerRepo) setUrlsToDelfromBuf() error {
 
 }
 
-func (s *ServerRepo) delUrls() {
+func (s *ServerRepo) delUrls(ctx context.Context) {
 	db := s.db
-	ctx, cancelFunc := context.WithTimeout(s.ctx, 20*time.Second)
+	ctx, cancelFunc := context.WithTimeout(ctx, 20*time.Second)
 	defer cancelFunc()
 
 	q := `DELETE FROM URLS WHERE for_delete=true`
@@ -113,17 +113,17 @@ func (s *ServerRepo) delUrls() {
 }
 
 //CheckDBConnection trying connect to db.
-func (s *ServerRepo) CheckDBConnection() error {
-	err := s.db.PingContext(s.ctx)
+func (s *ServerRepo) CheckDBConnection(ctx context.Context) error {
+	err := s.db.PingContext(ctx)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *ServerRepo) createTables() error {
+func (s *ServerRepo) createTables(ctx context.Context) error {
 	db := s.db
-	ctx, cancelFunc := context.WithTimeout(s.ctx, 10*time.Second)
+	ctx, cancelFunc := context.WithTimeout(ctx, 10*time.Second)
 	defer cancelFunc()
 
 	q := `CREATE TABLE IF NOT EXISTS users (
@@ -152,29 +152,30 @@ func (s *ServerRepo) createTables() error {
 	return nil
 }
 
-func NewServerRepo(mCtx context.Context, c string) (*ServerRepo, error) {
+func NewServerRepo(ctx context.Context, c string) (*ServerRepo, error) {
 	delCh = make(chan delBufRow, 100)
 	db, err := sql.Open("postgres", c)
 	if err != nil {
 		return nil, err
 	}
 
-	ctx, cancel := context.WithCancel(mCtx)
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	sr := &ServerRepo{
 		connStr: c,
 		db:      db,
-		ctx:     ctx,
 		cancel:  cancel,
 		dBuf:    make([]delBufRow, 0, 1000),
 	}
-	if err := sr.CheckDBConnection(); err != nil {
+	if err := sr.CheckDBConnection(ctx); err != nil {
 		return nil, err
 	}
 
-	if err := sr.createTables(); err != nil {
+	if err := sr.createTables(ctx); err != nil {
 		return nil, err
 	}
 
-	go sr.addURLToDel(delCh)
+	go sr.addURLToDel(ctx, delCh)
 	return sr, nil
 }

@@ -48,19 +48,19 @@ func (m *RepoMock) FindUser(context.Context, string) bool {
 	return false
 }
 
-func (m *RepoMock) CreateUser() (string, error) {
+func (m *RepoMock) CreateUser(context.Context) (string, error) {
 	return "", nil
 }
 
-func (m *RepoMock) GetUserURLs(string) ([]models.URLs, error) {
+func (m *RepoMock) GetUserURLs(context.Context, string) ([]models.URLs, error) {
 	return nil, nil
 }
 
-func (m *RepoMock) CheckDBConnection() error {
+func (m *RepoMock) CheckDBConnection(context.Context) error {
 	return nil
 }
 
-func (m *RepoMock) SetURLsToDel([]string, string) error {
+func (m *RepoMock) SetURLsToDel(context.Context, []string, string) error {
 	return nil
 }
 

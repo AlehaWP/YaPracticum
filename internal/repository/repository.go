@@ -30,7 +30,6 @@ type delBuf []delBufRow
 type ServerRepo struct {
 	connStr string
 	db      *sql.DB
-	ctx     context.Context
 	cancel  context.CancelFunc
 	dBuf    delBuf
 }
@@ -85,25 +84,9 @@ func (s *ServerRepo) GetURL(ctx context.Context, id string) (string, error) {
 	return url, nil
 }
 
-// func (s *ServerRepo) SetURLsToDel(d []string, userID string) error {
-
-// 	db := s.db
-// 	ctx, cancelfunc := context.WithTimeout(s.ctx, 5*time.Second)
-// 	defer cancelfunc()
-// 	q := `UPDATE urls SET
-// 	      for_delete = true
-// 		  from (SELECT unnest($1::varchar(36)[]) as cor_id, (SELECT COALESCE(id, 0) FROM users where user_enc_id=$2) as user_id) as del_data
-// 		  WHERE del_data.cor_id = urls.correlation_id and del_data.user_id=urls.user_id
-// 	`
-// 	if _, err := db.ExecContext(ctx, q, d, userID); err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
-
-func (s *ServerRepo) SetURLsToDel(d []string, userID string) error {
+func (s *ServerRepo) SetURLsToDel(ctx context.Context, d []string, userID string) error {
 	db := s.db
-	ctx, cancelfunc := context.WithTimeout(s.ctx, 5*time.Second)
+	ctx, cancelfunc := context.WithTimeout(ctx, 5*time.Second)
 	defer cancelfunc()
 
 	q := `SELECT id FROM users WHERE user_enc_id=$1`
@@ -122,28 +105,28 @@ func (s *ServerRepo) SetURLsToDel(d []string, userID string) error {
 	return nil
 }
 
-func (s *ServerRepo) addURLToDel(ch chan delBufRow) {
+func (s *ServerRepo) addURLToDel(ctx context.Context, ch chan delBufRow) {
 	tP := 1 * time.Second
 	timer := time.NewTimer(tP)
 	timerCounter := 0
+
 	for {
 		select {
-		case <-s.ctx.Done():
-			s.ctx = context.Background()
-			s.delUrls()
+		case <-ctx.Done():
+			s.delUrls(ctx)
 			return
 		case <-timer.C:
 			timerCounter += 1
 			if timerCounter == 4 {
-				s.delUrls()
+				s.delUrls(ctx)
 				timerCounter = 0
 			}
-			s.setUrlsToDelfromBuf()
+			s.setUrlsToDelfromBuf(ctx)
 			timer.Reset(tP)
 		case v := <-ch:
 			s.dBuf = append(s.dBuf, v)
 			if cap(s.dBuf) == len(s.dBuf) {
-				s.setUrlsToDelfromBuf()
+				s.setUrlsToDelfromBuf(ctx)
 			}
 		}
 	}
@@ -170,9 +153,9 @@ func (s *ServerRepo) SaveURLs(ctx context.Context, u map[string]string, baseURL 
 	return u, nil
 }
 
-func (s *ServerRepo) GetUserURLs(userEncID string) ([]models.URLs, error) {
+func (s *ServerRepo) GetUserURLs(ctx context.Context, userEncID string) ([]models.URLs, error) {
 	db := s.db
-	ctx, cancelfunc := context.WithTimeout(s.ctx, 5*time.Second)
+	ctx, cancelfunc := context.WithTimeout(ctx, 5*time.Second)
 	defer cancelfunc()
 	m := make([]models.URLs, 0)
 	q := `SELECT url, base_url || shorten_url from urls as u
@@ -216,9 +199,9 @@ func (s *ServerRepo) FindUser(ctx context.Context, userEncID string) (finded boo
 	return true
 }
 
-func (s *ServerRepo) CreateUser() (string, error) {
+func (s *ServerRepo) CreateUser(ctx context.Context) (string, error) {
 	db := s.db
-	ctx, cancelfunc := context.WithTimeout(s.ctx, 5*time.Second)
+	ctx, cancelfunc := context.WithTimeout(ctx, 5*time.Second)
 	defer cancelfunc()
 
 	ur := uuid.New()

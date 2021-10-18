@@ -13,8 +13,8 @@ type Repository interface {
 	SaveURL(context.Context, string, string, string) (string, error)
 	SaveURLs(context.Context, map[string]string, string, string) (map[string]string, error)
 	FindUser(context.Context, string) bool
-	CreateUser() (string, error)
-	GetUserURLs(string) ([]URLs, error)
-	CheckDBConnection() error
-	SetURLsToDel([]string, string) error
+	CreateUser(context.Context) (string, error)
+	GetUserURLs(context.Context, string) ([]URLs, error)
+	CheckDBConnection(context.Context) error
+	SetURLsToDel(context.Context, []string, string) error
 }
