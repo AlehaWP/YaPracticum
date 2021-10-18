@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/AlehaWP/YaPracticum.git/internal/defoptions"
 	"github.com/AlehaWP/YaPracticum.git/internal/repository"
@@ -29,7 +28,4 @@ func main() {
 	go s.Start(ctx, sr, opt)
 
 	<-ctx.Done()
-
-	timer := time.NewTicker(5 * time.Second)
-	<-timer.C
 }

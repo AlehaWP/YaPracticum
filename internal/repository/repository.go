@@ -107,9 +107,7 @@ func (s *ServerRepo) SetURLsToDel(ctx context.Context, d []string, userID string
 }
 
 func (s *ServerRepo) addURLToDel(ctx context.Context) {
-
 	timerCounter := 0
-
 	for {
 		select {
 		case <-s.timer.C:
@@ -118,10 +116,10 @@ func (s *ServerRepo) addURLToDel(ctx context.Context) {
 				s.delUrls(ctx)
 				timerCounter = 0
 			}
-			s.flushD(ctx)
+			s.flushDBuf(ctx)
 			s.timer.Reset(s.dur)
 		case v := <-s.delCh:
-			s.addD(ctx, v)
+			s.addDBuf(ctx, v)
 		}
 	}
 }
