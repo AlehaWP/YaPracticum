@@ -153,7 +153,6 @@ func (s *ServerRepo) createTables(ctx context.Context) error {
 }
 
 func NewServerRepo(ctx context.Context, c string) (*ServerRepo, error) {
-	delCh = make(chan delBufRow, 100)
 	db, err := sql.Open("postgres", c)
 	if err != nil {
 		return nil, err
@@ -166,6 +165,7 @@ func NewServerRepo(ctx context.Context, c string) (*ServerRepo, error) {
 		db:      db,
 		cancel:  cancel,
 		dBuf:    make([]delBufRow, 0, 1000),
+		delCh:   make(chan delBufRow, 100),
 	}
 	if err := sr.CheckDBConnection(ctx); err != nil {
 		return nil, err
@@ -175,6 +175,6 @@ func NewServerRepo(ctx context.Context, c string) (*ServerRepo, error) {
 		return nil, err
 	}
 
-	go sr.addURLToDel(ctx, delCh)
+	go sr.addURLToDel(ctx)
 	return sr, nil
 }

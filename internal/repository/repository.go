@@ -22,8 +22,6 @@ type delBufRow struct {
 	id  int
 }
 
-var delCh chan delBufRow
-
 type delBuf []delBufRow
 
 //UrlsData repository of urls. Realize Repository interface.
@@ -32,6 +30,7 @@ type ServerRepo struct {
 	db      *sql.DB
 	cancel  context.CancelFunc
 	dBuf    delBuf
+	delCh   chan delBufRow
 }
 
 type UsersRepo struct {
@@ -98,14 +97,14 @@ func (s *ServerRepo) SetURLsToDel(ctx context.Context, d []string, userID string
 	}
 	go func() {
 		for _, v := range d {
-			delCh <- delBufRow{v, id}
+			s.delCh <- delBufRow{v, id}
 		}
 	}()
 
 	return nil
 }
 
-func (s *ServerRepo) addURLToDel(ctx context.Context, ch chan delBufRow) {
+func (s *ServerRepo) addURLToDel(ctx context.Context) {
 	tP := 1 * time.Second
 	timer := time.NewTimer(tP)
 	timerCounter := 0
@@ -123,7 +122,7 @@ func (s *ServerRepo) addURLToDel(ctx context.Context, ch chan delBufRow) {
 			}
 			s.setUrlsToDelfromBuf(ctx)
 			timer.Reset(tP)
-		case v := <-ch:
+		case v := <-s.delCh:
 			s.dBuf = append(s.dBuf, v)
 			if cap(s.dBuf) == len(s.dBuf) {
 				s.setUrlsToDelfromBuf(ctx)
