@@ -31,6 +31,8 @@ type ServerRepo struct {
 	cancel  context.CancelFunc
 	dBuf    delBuf
 	delCh   chan delBufRow
+	timer   *time.Timer
+	dur     time.Duration
 }
 
 type UsersRepo struct {
@@ -105,28 +107,21 @@ func (s *ServerRepo) SetURLsToDel(ctx context.Context, d []string, userID string
 }
 
 func (s *ServerRepo) addURLToDel(ctx context.Context) {
-	tP := 1 * time.Second
-	timer := time.NewTimer(tP)
+
 	timerCounter := 0
 
 	for {
 		select {
-		case <-ctx.Done():
-			s.delUrls(ctx)
-			return
-		case <-timer.C:
+		case <-s.timer.C:
 			timerCounter += 1
 			if timerCounter == 4 {
 				s.delUrls(ctx)
 				timerCounter = 0
 			}
-			s.setUrlsToDelfromBuf(ctx)
-			timer.Reset(tP)
+			s.flushD(ctx)
+			s.timer.Reset(s.dur)
 		case v := <-s.delCh:
-			s.dBuf = append(s.dBuf, v)
-			if cap(s.dBuf) == len(s.dBuf) {
-				s.setUrlsToDelfromBuf(ctx)
-			}
+			s.addD(ctx, v)
 		}
 	}
 }

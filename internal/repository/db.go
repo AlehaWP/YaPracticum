@@ -15,6 +15,51 @@ func (s *ServerRepo) Close() {
 	s.db.Close()
 }
 
+func (s *ServerRepo) flushDBuf(ctx context.Context) error {
+	db := s.db
+	ctx, cancelfunc := context.WithTimeout(ctx, 30*time.Second)
+	defer cancelfunc()
+
+	t, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer t.Rollback()
+
+	// q := `UPDATE urls SET for_delete = true WHERE correlation_id=$1 and user_id = $2`
+
+	q := `UPDATE urls SET for_delete = true WHERE shorten_url=$1 and user_id = $2`
+
+	pc, err := t.PrepareContext(ctx, q)
+	if err != nil {
+		return err
+	}
+	defer pc.Close()
+
+	for _, v := range s.dBuf {
+		if _, err := pc.ExecContext(ctx,
+			v.url,
+			v.id,
+		); err != nil {
+			return err
+		}
+	}
+
+	t.Commit()
+
+	s.dBuf = s.dBuf[:0]
+
+	return nil
+
+}
+
+func (s *ServerRepo) addDBuf(ctx context.Context, v delBufRow) {
+	s.dBuf = append(s.dBuf, v)
+	if cap(s.dBuf) == len(s.dBuf) {
+		s.flushDBuf(ctx)
+	}
+}
+
 func (s *ServerRepo) saveUrlsToDB(ctx context.Context, us []urlInfo, baseURL, userID string) error {
 	db := s.db
 	ctx, cancelfunc := context.WithTimeout(ctx, 30*time.Second)
@@ -61,54 +106,23 @@ func (s *ServerRepo) saveUrlsToDB(ctx context.Context, us []urlInfo, baseURL, us
 
 }
 
-func (s *ServerRepo) setUrlsToDelfromBuf(ctx context.Context) error {
-	db := s.db
-	ctx, cancelfunc := context.WithTimeout(ctx, 30*time.Second)
-	defer cancelfunc()
-
-	t, err := db.Begin()
-	if err != nil {
-		return err
-	}
-	defer t.Rollback()
-
-	// q := `UPDATE urls SET for_delete = true WHERE correlation_id=$1 and user_id = $2`
-
-	q := `UPDATE urls SET for_delete = true WHERE shorten_url=$1 and user_id = $2`
-
-	pc, err := t.PrepareContext(ctx, q)
-	if err != nil {
-		return err
-	}
-	defer pc.Close()
-
-	for _, v := range s.dBuf {
-		if _, err := pc.ExecContext(ctx,
-			v.url,
-			v.id,
-		); err != nil {
-			return err
-		}
-	}
-
-	t.Commit()
-
-	s.dBuf = s.dBuf[:0]
-
-	return nil
-
-}
-
 func (s *ServerRepo) delUrls(ctx context.Context) {
 	db := s.db
 	ctx, cancelFunc := context.WithTimeout(ctx, 20*time.Second)
 	defer cancelFunc()
 
-	q := `DELETE FROM URLS WHERE for_delete=true`
-
-	if _, err := db.ExecContext(ctx, q); err != nil {
+	t, err := db.Begin()
+	if err != nil {
 		fmt.Println("Ошибка удаления URL: ", err.Error())
 	}
+	defer t.Rollback()
+	q := `DELETE FROM URLS WHERE for_delete=true`
+
+	if _, err := t.ExecContext(ctx, q); err != nil {
+		fmt.Println("Ошибка удаления URL: ", err.Error())
+	}
+
+	t.Commit()
 
 }
 
@@ -159,6 +173,8 @@ func NewServerRepo(ctx context.Context, c string) (*ServerRepo, error) {
 	}
 
 	ctx, cancel := context.WithCancel(ctx)
+	tP := 1 * time.Second
+	timer := time.NewTimer(tP)
 
 	sr := &ServerRepo{
 		connStr: c,
@@ -166,6 +182,8 @@ func NewServerRepo(ctx context.Context, c string) (*ServerRepo, error) {
 		cancel:  cancel,
 		dBuf:    make([]delBufRow, 0, 1000),
 		delCh:   make(chan delBufRow, 100),
+		timer:   timer,
+		dur:     tP,
 	}
 	if err := sr.CheckDBConnection(ctx); err != nil {
 		return nil, err
