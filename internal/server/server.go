@@ -16,7 +16,7 @@ type Server struct {
 }
 
 //Start server with router.
-func (s *Server) Start(mCtx context.Context, repo models.Repository, opt models.Options) {
+func (s *Server) Start(ctx context.Context, repo models.Repository, opt models.Options) {
 	r := chi.NewRouter()
 	handlers.NewHandlers(repo, opt)
 	middlewares.NewCookie(repo)
@@ -38,7 +38,7 @@ func (s *Server) Start(mCtx context.Context, repo models.Repository, opt models.
 	s.Handler = r
 	go s.ListenAndServe()
 
-	<-mCtx.Done()
+	<-ctx.Done()
 	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelFunc()
 	s.Shutdown(ctx)
