@@ -14,9 +14,10 @@ import (
 // Main.
 func main() {
 
-	mainCtx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	opt := defoptions.NewDefOptions()
-	sr, err := repository.NewServerRepo(mainCtx, opt.DBConnString())
+	sr, err := repository.NewServerRepo(ctx, opt.DBConnString())
 	if err != nil {
 		fmt.Println("Ошибка при подключении к БД: ", err)
 		return
@@ -25,9 +26,9 @@ func main() {
 	// serverRepo := repository.NewRepo(opt.RepoFileName())
 	s := new(server.Server)
 	go signal.HandleQuit(cancel)
-	go s.Start(mainCtx, sr, opt)
+	go s.Start(ctx, sr, opt)
 
-	<-mainCtx.Done()
+	<-ctx.Done()
 
 	timer := time.NewTicker(5 * time.Second)
 	<-timer.C

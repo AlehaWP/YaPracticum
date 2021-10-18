@@ -46,7 +46,7 @@ type urlInfo struct {
 	CorID    string
 }
 
-func (s *ServerRepo) SaveURL(url, baseURL, userID string) (string, error) {
+func (s *ServerRepo) SaveURL(ctx context.Context, url, baseURL, userID string) (string, error) {
 
 	r := shorter.MakeShortner(url)
 	u := urlInfo{
@@ -55,7 +55,7 @@ func (s *ServerRepo) SaveURL(url, baseURL, userID string) (string, error) {
 		CorID:    uuid.New().String(),
 	}
 	us := []urlInfo{u}
-	if err := s.saveUrlsToDB(us, baseURL, userID); err != nil {
+	if err := s.saveUrlsToDB(ctx, us, baseURL, userID); err != nil {
 		var e *pq.Error
 		if errors.As(err, &e) {
 			if e.Code == pgerrcode.UniqueViolation {
@@ -67,9 +67,9 @@ func (s *ServerRepo) SaveURL(url, baseURL, userID string) (string, error) {
 	return baseURL + r, nil
 }
 
-func (s *ServerRepo) GetURL(id string) (string, error) {
+func (s *ServerRepo) GetURL(ctx context.Context, id string) (string, error) {
 	db := s.db
-	ctx, cancelfunc := context.WithTimeout(s.ctx, 5*time.Second)
+	ctx, cancelfunc := context.WithTimeout(ctx, 5*time.Second)
 	defer cancelfunc()
 	q := `SELECT url, for_delete FROM urls WHERE shorten_url=$1`
 	var url string
@@ -151,7 +151,7 @@ func (s *ServerRepo) addURLToDel(ch chan delBufRow) {
 
 // func (s *ServerRepo) AddTo
 
-func (s *ServerRepo) SaveURLs(u map[string]string, baseURL string, userID string) (map[string]string, error) {
+func (s *ServerRepo) SaveURLs(ctx context.Context, u map[string]string, baseURL string, userID string) (map[string]string, error) {
 	var us []urlInfo
 	for k, v := range u {
 		r := shorter.MakeShortner(v)
@@ -163,7 +163,7 @@ func (s *ServerRepo) SaveURLs(u map[string]string, baseURL string, userID string
 		u[k] = baseURL + r
 		us = append(us, ui)
 	}
-	if err := s.saveUrlsToDB(us, baseURL, userID); err != nil {
+	if err := s.saveUrlsToDB(ctx, us, baseURL, userID); err != nil {
 
 		return u, err
 	}
@@ -199,9 +199,9 @@ func (s *ServerRepo) GetUserURLs(userEncID string) ([]models.URLs, error) {
 	return m, nil
 }
 
-func (s *ServerRepo) FindUser(userEncID string) (finded bool) {
+func (s *ServerRepo) FindUser(ctx context.Context, userEncID string) (finded bool) {
 	db := s.db
-	ctx, cancelfunc := context.WithTimeout(s.ctx, 5*time.Second)
+	ctx, cancelfunc := context.WithTimeout(ctx, 5*time.Second)
 	defer cancelfunc()
 	q := `SELECT id FROM users WHERE user_enc_id=$1`
 	var id int

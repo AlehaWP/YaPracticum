@@ -75,7 +75,7 @@ func HandlerAPIURLsPost(w http.ResponseWriter, r *http.Request) {
 		uts[u.CorID] = u.OriginURL
 	}
 
-	uts, err = Repo.SaveURLs(uts, BaseURL, userID)
+	uts, err = Repo.SaveURLs(ctx, uts, BaseURL, userID)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -131,7 +131,7 @@ func HandlerURLPost(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
-	retURL, err := Repo.SaveURL(string(textBody), BaseURL, userID)
+	retURL, err := Repo.SaveURL(ctx, string(textBody), BaseURL, userID)
 	if err != nil {
 		if err == models.ErrConflictInsert {
 			w.Header().Add("Content-Type", r.Header.Get("Content-Type"))
@@ -175,7 +175,7 @@ func HandlerAPIURLPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	su, err := Repo.SaveURL(tURLJson.URLLong, BaseURL, userID)
+	su, err := Repo.SaveURL(ctx, tURLJson.URLLong, BaseURL, userID)
 	if err != nil {
 		switch err {
 		case models.ErrConflictInsert:
@@ -212,7 +212,7 @@ func HandlerURLGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	val, err := Repo.GetURL(id)
+	val, err := Repo.GetURL(ctx, id)
 	if err != nil {
 		if err == models.ErrURLSetToDel {
 			w.WriteHeader(http.StatusGone)

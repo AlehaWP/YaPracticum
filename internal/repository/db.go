@@ -15,9 +15,9 @@ func (s *ServerRepo) Close() {
 	s.db.Close()
 }
 
-func (s *ServerRepo) saveUrlsToDB(us []urlInfo, baseURL, userID string) error {
+func (s *ServerRepo) saveUrlsToDB(ctx context.Context, us []urlInfo, baseURL, userID string) error {
 	db := s.db
-	ctx, cancelfunc := context.WithTimeout(s.ctx, 30*time.Second)
+	ctx, cancelfunc := context.WithTimeout(ctx, 30*time.Second)
 	defer cancelfunc()
 
 	t, err := db.Begin()

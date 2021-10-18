@@ -17,7 +17,7 @@ func SetCookieUser(next http.Handler) http.Handler {
 		if err == nil {
 			cv = c.Value
 		}
-		if ok := Repo.FindUser(cv); !ok {
+		if ok := Repo.FindUser(r.Context(), cv); !ok {
 			cv, err = Repo.CreateUser()
 			if err != nil {
 				fmt.Println("Can't create cookie", err)
