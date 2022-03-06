@@ -30,7 +30,7 @@ func (s *Server) Start(ctx context.Context, repo models.Repository, opt models.O
 		r.Get("/", handlers.HandlerURLGet)
 	})
 	r.Post("/", handlers.HandlerURLPost)
-	r.Get("api/user/urls", handlers.HandlerUserPostURLs)
+	r.Get("/api/user/urls", handlers.HandlerUserPostURLs)
 	r.Post("/api/shorten", handlers.HandlerAPIURLPost)
 	r.Post("/api/shorten/batch", handlers.HandlerAPIURLsPost)
 	r.Delete("/api/user/urls", handlers.HandlerDeleteUserUrls)
