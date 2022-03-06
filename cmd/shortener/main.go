@@ -25,7 +25,6 @@ func main() {
 	// serverRepo := repository.NewRepo(opt.RepoFileName())
 	s := new(server.Server)
 	go signal.HandleQuit(cancel)
-	// Тест
 	go s.Start(ctx, sr, opt)
 
 	<-ctx.Done()
