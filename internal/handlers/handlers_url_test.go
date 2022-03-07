@@ -185,6 +185,31 @@ func TestHandlerApiUrlPost(t *testing.T) {
 
 }
 
+func BenchmarkHandlerApiUrlPost(b *testing.B) {
+	str := &struct {
+		URL string
+	}{
+		URL: "www.example.com",
+	}
+	bOut, err := json.Marshal(str)
+	if err != nil {
+		//fmt.Println("Ошибка серилизации")
+	}
+	ctx := context.WithValue(context.Background(), models.UserKey, "aasdasdSQW")
+	repoMock.On("SaveURL", ctx, "www.example.com", opt.RespBaseURL()+"/", "aasdasdSQW").Return(opt.RespBaseURL()+"/123123asdasd", nil)
+
+	for i := 0; i < b.N; i++ {
+		handler := http.HandlerFunc(HandlerAPIURLPost)
+		r := httptest.NewRequest("POST", "http://localhost:8080", bytes.NewBuffer(bOut))
+		w := httptest.NewRecorder()
+		b.StartTimer()
+		handler.ServeHTTP(w, r.WithContext(ctx))
+		res := w.Result()
+		b.StopTimer()
+		defer res.Body.Close()
+	}
+}
+
 func InitMocks() {
 	repoMock = new(RepoMock)
 	optsMock = newOptsMock()

@@ -71,7 +71,9 @@ func (d *defOptions) setFlags() {
 	flag.StringVar(&d.baseURL, "b", "http://localhost:8080", "a response address string")
 	flag.StringVar(&d.repoFileName, "f", appDir+`/local.gob`, "a file storage path string")
 	flag.StringVar(&d.dbConnString, "d", "user=kseikseich dbname=yap sslmode=disable", "a db connection string")
+
 	flag.Parse()
+
 }
 
 // NewDefOptions return obj like Options interfase.
