@@ -160,6 +160,23 @@ func TestHandlerUrlPost(t *testing.T) {
 
 }
 
+func BenchmarkHandlerUrlPost(b *testing.B) {
+	ctx := context.WithValue(context.Background(), models.UserKey, "asdasd")
+	repoMock.On("SaveURL", ctx, "www.example.com", opt.RespBaseURL()+"/", "asdasd").Return(opt.RespBaseURL()+"/123123asdasd", nil)
+
+	for i := 0; i < b.N; i++ {
+		handler := http.HandlerFunc(HandlerURLPost)
+		r := httptest.NewRequest("POST", "http://localhost:8080", strings.NewReader("www.example.com"))
+		w := httptest.NewRecorder()
+		b.StartTimer()
+		handler.ServeHTTP(w, r.WithContext(ctx))
+		res := w.Result()
+		b.StopTimer()
+		defer res.Body.Close()
+	}
+
+}
+
 func TestHandlerApiUrlPost(t *testing.T) {
 	str := &struct {
 		URL string
