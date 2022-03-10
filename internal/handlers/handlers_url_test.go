@@ -13,83 +13,12 @@ import (
 	"testing"
 
 	"github.com/AlehaWP/YaPracticum.git/internal/models"
+	"github.com/AlehaWP/YaPracticum.git/internal/test"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
-type RepoMock struct {
-	mock.Mock
-}
-
-func (m *RepoMock) SaveURL(ctx context.Context, url, baseURL, userID string) (string, error) {
-	args := m.Called(ctx, url, baseURL, userID)
-	return args.String(0), args.Error(1)
-}
-
-func (m *RepoMock) SaveURLs(ctx context.Context, urls map[string]string, baseURL, userID string) (map[string]string, error) {
-	args := m.Called(ctx, urls, baseURL, userID)
-	return args.Get(0).(map[string]string), args.Error(1)
-}
-
-func (m *RepoMock) GetURL(ctx context.Context, id string) (string, error) {
-	args := m.Called(ctx, id)
-	return args.String(0), args.Error(1)
-}
-
-// func (m *RepoMock) Get() map[string][]string {
-// 	return nil
-// }
-
-// func (m *RepoMock) ToSet() *map[string][]string {
-// 	return nil
-// }
-
-func (m *RepoMock) FindUser(context.Context, string) bool {
-	return false
-}
-
-func (m *RepoMock) CreateUser(context.Context) (string, error) {
-	return "", nil
-}
-
-func (m *RepoMock) GetUserURLs(context.Context, string) ([]models.URLs, error) {
-	return nil, nil
-}
-
-func (m *RepoMock) CheckDBConnection(context.Context) error {
-	return nil
-}
-
-func (m *RepoMock) SetURLsToDel(context.Context, []string, string) error {
-	return nil
-}
-
-type OptsMock struct {
-	mock.Mock
-}
-
-func (o *OptsMock) ServAddr() string {
-	args := o.Called()
-	return args.String(0)
-}
-
-func (o *OptsMock) RespBaseURL() string {
-	args := o.Called()
-	return args.String(0)
-}
-
-func (o *OptsMock) RepoFileName() string {
-	args := o.Called()
-	return args.String(0)
-}
-
-func (o *OptsMock) DBConnString() string {
-	args := o.Called()
-	return args.String(0)
-}
-
-func newOptsMock() *OptsMock {
-	optMock := new(OptsMock)
+func newOptsMock() *test.OptsMock {
+	optMock := new(test.OptsMock)
 	optMock.On("ServAddr").Return("http://localhost:8080")
 	optMock.On("RespBaseURL").Return("http://localhost")
 	optMock.On("RepoFileName").Return("local.db")
@@ -97,8 +26,8 @@ func newOptsMock() *OptsMock {
 	return optMock
 }
 
-var repoMock *RepoMock
-var optsMock *OptsMock
+var repoMock *test.RepoMock
+var OptsMock *test.OptsMock
 var opt models.Options
 
 func TestHandlerUrlGet(t *testing.T) {
@@ -228,8 +157,8 @@ func BenchmarkHandlerApiUrlPost(b *testing.B) {
 }
 
 func InitMocks() {
-	repoMock = new(RepoMock)
-	optsMock = newOptsMock()
-	opt = optsMock
-	NewHandlers(repoMock, optsMock)
+	repoMock = new(test.RepoMock)
+	OptsMock = newOptsMock()
+	opt = OptsMock
+	NewHandlers(repoMock, OptsMock)
 }

@@ -20,7 +20,7 @@ func Test_generateRandom(t *testing.T) {
 				16,
 			},
 			16,
-			true,
+			false,
 		},
 		{
 			"Тест 2",
@@ -28,7 +28,7 @@ func Test_generateRandom(t *testing.T) {
 				5,
 			},
 			5,
-			true,
+			false,
 		},
 		{
 			"Тест 3",
@@ -36,7 +36,7 @@ func Test_generateRandom(t *testing.T) {
 				0,
 			},
 			0,
-			true,
+			false,
 		},
 	}
 	for _, tt := range tests {
@@ -68,15 +68,15 @@ func TestEncriptStr(t *testing.T) {
 			args{
 				"askjdh",
 			},
-			keySize,
-			true,
+			32,
+			false,
 		},
 		{
 			"Тест 2",
 			args{
 				"",
 			},
-			keySize,
+			0,
 			true,
 		},
 		{
@@ -84,8 +84,8 @@ func TestEncriptStr(t *testing.T) {
 			args{
 				"gkshlakjsdfh;ajkfh;alskdj;alksdfasjkdfhkjsdfb,asjdbfajdflakjdfnaksndf",
 			},
-			keySize,
-			true,
+			32,
+			false,
 		},
 	}
 	for _, tt := range tests {
@@ -96,7 +96,7 @@ func TestEncriptStr(t *testing.T) {
 				return
 			}
 			if len(got) != tt.want {
-				t.Errorf("EncriptStr() = %v, want %v", got, tt.want)
+				t.Errorf("EncriptStr() = %v, want %v", len(got), tt.want)
 			}
 		})
 	}

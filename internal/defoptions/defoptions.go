@@ -63,14 +63,11 @@ func (d *defOptions) checkEnv() {
 
 //setFlags for get options from console to default application options.
 func (d *defOptions) setFlags() {
-	appDir, err := os.Getwd()
-	if err != nil {
-		fmt.Println("Не удалось найти каталог программы!")
-	}
-	flag.StringVar(&d.servAddr, "a", "localhost:8080", "a server address string")
-	flag.StringVar(&d.baseURL, "b", "http://localhost:8080", "a response address string")
-	flag.StringVar(&d.repoFileName, "f", appDir+`/local.gob`, "a file storage path string")
-	flag.StringVar(&d.dbConnString, "d", "user=kseikseich dbname=yap sslmode=disable", "a db connection string")
+
+	flag.StringVar(&d.servAddr, "a", d.servAddr, "a server address string")
+	flag.StringVar(&d.baseURL, "b", d.baseURL, "a response address string")
+	flag.StringVar(&d.repoFileName, "f", d.repoFileName, "a file storage path string")
+	flag.StringVar(&d.dbConnString, "d", d.dbConnString, "a db connection string")
 
 	flag.Parse()
 
@@ -78,7 +75,16 @@ func (d *defOptions) setFlags() {
 
 // NewDefOptions return obj like Options interfase.
 func NewDefOptions() models.Options {
-	opt := new(defOptions)
+	appDir, err := os.Getwd()
+	if err != nil {
+		fmt.Println("Не удалось найти каталог программы!")
+	}
+	opt := defOptions{
+		"localhost:8080",
+		"http://localhost:8080",
+		appDir + `/local.gob`,
+		"user=kseikseich dbname=yap sslmode=disable",
+	}
 	opt.setFlags()
 	opt.checkEnv()
 	return opt

@@ -8,7 +8,7 @@ import (
 	"fmt"
 )
 
-var keySize int = 16
+const keySize int = 16
 
 func generateRandom(size int) ([]byte, error) {
 	b := make([]byte, size)
