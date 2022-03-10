@@ -4,6 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/md5"
 	"crypto/rand"
+	"errors"
 	"fmt"
 )
 
@@ -19,6 +20,9 @@ func generateRandom(size int) ([]byte, error) {
 }
 
 func EncriptStr(s string) (string, error) {
+	if len(s) == 0 {
+		return "", errors.New("Ошибка шифрования пустого значения")
+	}
 	key, err := generateRandom(aes.BlockSize)
 	if err != nil {
 		return "", err
