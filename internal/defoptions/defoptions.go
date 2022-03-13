@@ -32,7 +32,7 @@ func (d defOptions) DBConnString() string {
 	return d.dbConnString
 }
 
-type EnvOptions struct {
+type Config struct {
 	ServAddr     string `env:"SERVER_ADDRESS"`
 	BaseURL      string `env:"BASE_URL"`
 	RepoFileName string `env:"FILE_STORAGE_PATH"`
@@ -42,7 +42,7 @@ type EnvOptions struct {
 //checkEnv for get options from env to default application options.
 func (d *defOptions) checkEnv() {
 
-	e := &EnvOptions{}
+	e := &Config{}
 	err := env.Parse(e)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -72,6 +72,27 @@ func (d *defOptions) setFlags() {
 	flag.Parse()
 
 }
+
+// func LoadConfiguration(file string) Config {
+// 	var config Config
+// 	configFile, err := os.Open(file)
+// 	if err != nil {
+// 		fmt.Println(err.Error())
+// 	}
+// 	jsonParser := json.NewDecoder(configFile)
+// 	jsonParser.Decode(&config)
+// 	return config
+// }
+
+// func SaveConfiguration(file string) error {
+// 	configFile, err := os.
+// 	if err != nil {
+// 		fmt.Println(err.Error())
+// 	}
+// 	jsonParser := json.NewDecoder(configFile)
+// 	jsonParser.Decode(&config)
+// 	return config
+// }
 
 // NewDefOptions return obj like Options interfase.
 func NewDefOptions() models.Options {
