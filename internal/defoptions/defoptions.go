@@ -145,7 +145,7 @@ func NewDefOptions() models.Options {
 
 	f := appDir + `/config.json`
 	if ok, _ := exists(f); ok {
-		opt.readConfig(f)
+		// opt.readConfig(f)
 	}
 
 	opt.checkEnv()
