@@ -19,6 +19,7 @@ func generateRandom(size int) ([]byte, error) {
 	return b, nil
 }
 
+// EncriptStr returns an encrypted value.
 func EncriptStr(s string) (string, error) {
 	if len(s) == 0 {
 		return "", errors.New("Ошибка шифрования пустого значения")
