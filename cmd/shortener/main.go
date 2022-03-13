@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	_ "net/http/pprof"
 
 	"github.com/AlehaWP/YaPracticum.git/internal/defoptions"
 	"github.com/AlehaWP/YaPracticum.git/internal/repository"
