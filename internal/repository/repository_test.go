@@ -9,13 +9,19 @@ import (
 	"github.com/AlehaWP/YaPracticum.git/internal/defoptions"
 )
 
-var sr *ServerRepo
-var once sync.Once
-var userID string
-var ctx context.Context
+var (
+	sr        *ServerRepo
+	once      sync.Once
+	userID    string
+	ctx       context.Context
+	noConnect bool = false
+)
 
 func TestServerRepo_CreateUser(t *testing.T) {
 	initVar()
+	if noConnect {
+		return
+	}
 
 	t.Run("CreateUser", func(t *testing.T) {
 		var err error
@@ -28,6 +34,9 @@ func TestServerRepo_CreateUser(t *testing.T) {
 
 func TestServerRepo_FindUser(t *testing.T) {
 	initVar()
+	if noConnect {
+		return
+	}
 	type args struct {
 		ctx       context.Context
 		userEncID string
@@ -64,6 +73,9 @@ func TestServerRepo_FindUser(t *testing.T) {
 }
 
 func TestServerRepo_GetURL(t *testing.T) {
+	if noConnect {
+		return
+	}
 	type args struct {
 		ctx context.Context
 		id  string
@@ -99,18 +111,27 @@ func TestServerRepo_GetURL(t *testing.T) {
 }
 
 func BenchmarkCreateUser(b *testing.B) {
+	if noConnect {
+		return
+	}
 	for i := 0; i < b.N; i++ {
 		sr.CreateUser(ctx)
 	}
 }
 
 func BenchmarkFindUser(b *testing.B) {
+	if noConnect {
+		return
+	}
 	for i := 0; i < b.N; i++ {
 		sr.FindUser(ctx, userID)
 	}
 }
 
 func BenchmarkGetURL(b *testing.B) {
+	if noConnect {
+		return
+	}
 	for i := 0; i < b.N; i++ {
 		sr.GetURL(ctx, "123")
 	}
@@ -122,7 +143,9 @@ func initVar() {
 		opt := defoptions.NewDefOptions()
 		var err error
 		sr, err = NewServerRepo(ctx, opt.DBConnString())
+
 		if err != nil {
+			noConnect = true
 			fmt.Println("Ошибка при подключении к БД: ", err)
 			return
 		}

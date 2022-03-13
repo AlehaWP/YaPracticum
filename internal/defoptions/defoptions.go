@@ -144,13 +144,13 @@ func NewDefOptions() models.Options {
 	}
 
 	f := appDir + `/config.json`
-	if ok, _ := exists(f); ok {
-		// opt.readConfig(f)
-	}
+	// if ok, _ := exists(f); ok {
+	// 	opt.readConfig(f)
+	// }
 
 	opt.checkEnv()
 	opt.setFlags()
-	opt.saveConfiguration(appDir + `/config.json`)
+	opt.saveConfiguration(f)
 
 	return opt
 }
