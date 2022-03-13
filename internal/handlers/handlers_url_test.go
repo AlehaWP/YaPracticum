@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -139,7 +140,7 @@ func BenchmarkHandlerApiUrlPost(b *testing.B) {
 	}
 	bOut, err := json.Marshal(str)
 	if err != nil {
-		//fmt.Println("Ошибка серилизации")
+		fmt.Println("ошибка серилизации")
 	}
 	ctx := context.WithValue(context.Background(), models.UserKey, "aasdasdSQW")
 	repoMock.On("SaveURL", ctx, "www.example.com", opt.RespBaseURL()+"/", "aasdasdSQW").Return(opt.RespBaseURL()+"/123123asdasd", nil)

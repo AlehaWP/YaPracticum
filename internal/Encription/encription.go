@@ -22,7 +22,7 @@ func generateRandom(size int) ([]byte, error) {
 // EncriptStr returns an encrypted value.
 func EncriptStr(s string) (string, error) {
 	if len(s) == 0 {
-		return "", errors.New("Ошибка шифрования пустого значения")
+		return "", errors.New("ошибка шифрования пустого значения")
 	}
 	key, err := generateRandom(aes.BlockSize)
 	if err != nil {

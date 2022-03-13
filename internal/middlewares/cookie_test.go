@@ -65,6 +65,7 @@ func TestSetCookieUser(t *testing.T) {
 		handler := SetCookieUser(http.HandlerFunc(nextHandler))
 		handler.ServeHTTP(w, r)
 		res := w.Result()
+		defer res.Body.Close()
 
 		assert.Equal(t, tt.want, res.Cookies()[0].Value, "Не верный ответ POST")
 	}
