@@ -89,7 +89,5 @@ func NewDefOptions() models.Options {
 	opt.checkEnv()
 	opt.setFlags()
 
-	fmt.Println(opt)
-
 	return opt
 }
