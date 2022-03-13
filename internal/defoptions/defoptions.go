@@ -85,7 +85,8 @@ func NewDefOptions() models.Options {
 		appDir + `/local.gob`,
 		"user=kseikseich dbname=yap sslmode=disable",
 	}
-	opt.setFlags()
+
 	opt.checkEnv()
+	opt.setFlags()
 	return opt
 }
