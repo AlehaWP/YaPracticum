@@ -79,7 +79,7 @@ func NewDefOptions() models.Options {
 	if err != nil {
 		fmt.Println("Не удалось найти каталог программы!")
 	}
-	opt := defOptions{
+	opt := &defOptions{
 		"localhost:8080",
 		"http://localhost:8080",
 		appDir + `/local.gob`,
@@ -88,5 +88,8 @@ func NewDefOptions() models.Options {
 
 	opt.checkEnv()
 	opt.setFlags()
+
+	fmt.Println(opt)
+
 	return opt
 }
