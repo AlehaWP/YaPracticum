@@ -9,7 +9,7 @@ import (
 	"github.com/AlehaWP/YaPracticum.git/internal/handlers"
 	"github.com/AlehaWP/YaPracticum.git/internal/middlewares"
 	"github.com/AlehaWP/YaPracticum.git/internal/models"
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 )
 
 type Server struct {
