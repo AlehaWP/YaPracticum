@@ -13,6 +13,7 @@ var Repo models.Repository
 var BaseURL string
 var Opt models.Options
 
+// HandlerUserPostURLs returns urls that user posted.
 func HandlerUserPostURLs(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	userID, ok := ctx.Value(models.UserKey).(string)
@@ -43,6 +44,7 @@ func HandlerUserPostURLs(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
+// HandlerAPIURLsPost saves urls to DB.
 func HandlerAPIURLsPost(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	userID, ok := ctx.Value(models.UserKey).(string)
@@ -107,6 +109,7 @@ func HandlerAPIURLsPost(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
+// HandlerCheckDBConnect returns connection to DB status.
 func HandlerCheckDBConnect(w http.ResponseWriter, r *http.Request) {
 	if err := Repo.CheckDBConnection(r.Context()); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -227,6 +230,7 @@ func HandlerURLGet(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
+// HandlerDeleteUserUrls deletes urls that user posted.
 func HandlerDeleteUserUrls(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

@@ -10,6 +10,7 @@ import (
 
 var Repo models.Repository
 
+// SetCookieUser creates a cookie for the following user identification.
 func SetCookieUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c, err := r.Cookie("UserID")

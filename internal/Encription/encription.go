@@ -4,10 +4,11 @@ import (
 	"crypto/aes"
 	"crypto/md5"
 	"crypto/rand"
+	"errors"
 	"fmt"
 )
 
-var keySize int = 16
+const keySize int = 16
 
 func generateRandom(size int) ([]byte, error) {
 	b := make([]byte, size)
@@ -18,7 +19,11 @@ func generateRandom(size int) ([]byte, error) {
 	return b, nil
 }
 
+// EncriptStr returns an encrypted value.
 func EncriptStr(s string) (string, error) {
+	if len(s) == 0 {
+		return "", errors.New("ошибка шифрования пустого значения")
+	}
 	key, err := generateRandom(aes.BlockSize)
 	if err != nil {
 		return "", err

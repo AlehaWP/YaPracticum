@@ -1,6 +1,8 @@
 package defoptions
 
 import (
+	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -32,7 +34,7 @@ func (d defOptions) DBConnString() string {
 	return d.dbConnString
 }
 
-type EnvOptions struct {
+type Config struct {
 	ServAddr     string `env:"SERVER_ADDRESS"`
 	BaseURL      string `env:"BASE_URL"`
 	RepoFileName string `env:"FILE_STORAGE_PATH"`
@@ -42,7 +44,7 @@ type EnvOptions struct {
 //checkEnv for get options from env to default application options.
 func (d *defOptions) checkEnv() {
 
-	e := &EnvOptions{}
+	e := &Config{}
 	err := env.Parse(e)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -61,23 +63,94 @@ func (d *defOptions) checkEnv() {
 	}
 }
 
+func exists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
+}
+
+func (d *defOptions) readConfig(file string) {
+
+	config := &Config{}
+
+	configFile, err := os.Open(file)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	jsonParser := json.NewDecoder(configFile)
+	jsonParser.Decode(config)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	if len(config.ServAddr) != 0 {
+		d.servAddr = config.ServAddr
+	}
+	if len(config.BaseURL) != 0 {
+		d.baseURL = config.BaseURL
+	}
+	if len(config.RepoFileName) != 0 {
+		d.repoFileName = config.RepoFileName
+	}
+	if len(config.DBConnString) != 0 {
+		d.dbConnString = config.DBConnString
+	}
+}
+
+func (d *defOptions) saveConfiguration(file string) error {
+	config := &Config{
+		ServAddr:     d.servAddr,
+		BaseURL:      d.baseURL,
+		RepoFileName: d.repoFileName,
+		DBConnString: d.dbConnString,
+	}
+	configFile, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+	if err != nil {
+		return errors.New("не удалось найти файл " + file)
+	}
+	jsonParser := json.NewEncoder(configFile)
+	jsonParser.Encode(&config)
+	return nil
+}
+
 //setFlags for get options from console to default application options.
 func (d *defOptions) setFlags() {
-	appDir, err := os.Getwd()
-	if err != nil {
-		fmt.Println("Не удалось найти каталог программы!")
-	}
-	flag.StringVar(&d.servAddr, "a", "localhost:8080", "a server address string")
-	flag.StringVar(&d.baseURL, "b", "http://localhost:8080", "a response address string")
-	flag.StringVar(&d.repoFileName, "f", appDir+`/local.gob`, "a file storage path string")
-	flag.StringVar(&d.dbConnString, "d", "user=kseikseich dbname=yap sslmode=disable", "a db connection string")
+
+	flag.StringVar(&d.servAddr, "a", d.servAddr, "a server address string")
+	flag.StringVar(&d.baseURL, "b", d.baseURL, "a response address string")
+	flag.StringVar(&d.repoFileName, "f", d.repoFileName, "a file storage path string")
+	flag.StringVar(&d.dbConnString, "d", d.dbConnString, "a db connection string")
+
 	flag.Parse()
+
 }
 
 // NewDefOptions return obj like Options interfase.
 func NewDefOptions() models.Options {
-	opt := new(defOptions)
-	opt.setFlags()
+	appDir, err := os.Getwd()
+	if err != nil {
+		fmt.Println("Не удалось найти каталог программы!")
+	}
+
+	opt := &defOptions{
+		"localhost:8080",
+		"http://localhost:8080",
+		appDir + `/local.gob`,
+		"user=kseikseich dbname=yap sslmode=disable",
+	}
+
+	f := appDir + `/config.json`
+	// if ok, _ := exists(f); ok {
+	// 	opt.readConfig(f)
+	// }
+
 	opt.checkEnv()
+	opt.setFlags()
+	opt.saveConfiguration(f)
+
 	return opt
 }
