@@ -12,6 +12,7 @@ import (
 func main() {
 	fmt.Println("Старт проверки")
 	multichecker.Main(
+		ErrCheckAnalyzer,
 		printf.Analyzer,
 		shadow.Analyzer,
 		structtag.Analyzer,
