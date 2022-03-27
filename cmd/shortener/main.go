@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	_ "net/http/pprof"
-	"os"
 
 	"github.com/AlehaWP/YaPracticum.git/internal/defoptions"
 	"github.com/AlehaWP/YaPracticum.git/internal/repository"
@@ -30,5 +29,4 @@ func main() {
 	go s.Start(ctx, sr, opt)
 
 	<-ctx.Done()
-	os.Exit(0)
 }
