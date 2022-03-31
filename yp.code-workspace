@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../staticlint"
+		},
+		{
+			"path": "../../../ClientServe"
+		}
+	],
+	"settings": {}
+}
