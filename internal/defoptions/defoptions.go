@@ -16,6 +16,7 @@ type defOptions struct {
 	baseURL      string
 	repoFileName string
 	dbConnString string
+	enableHTTPS  bool
 }
 
 func (d defOptions) ServAddr() string {
@@ -34,11 +35,16 @@ func (d defOptions) DBConnString() string {
 	return d.dbConnString
 }
 
+func (d defOptions) HTTPS() bool {
+	return d.enableHTTPS
+}
+
 type Config struct {
 	ServAddr     string `env:"SERVER_ADDRESS"`
 	BaseURL      string `env:"BASE_URL"`
 	RepoFileName string `env:"FILE_STORAGE_PATH"`
 	DBConnString string `env:"DATABASE_DSN"`
+	EnableHTTPS  bool   `env:"ENABLE_HTTPS"`
 }
 
 //checkEnv for get options from env to default application options.
@@ -60,6 +66,9 @@ func (d *defOptions) checkEnv() {
 	}
 	if len(e.DBConnString) != 0 {
 		d.dbConnString = e.DBConnString
+	}
+	if e.EnableHTTPS == true {
+		d.enableHTTPS = true
 	}
 }
 
@@ -99,6 +108,9 @@ func (d *defOptions) readConfig(file string) {
 	if len(config.DBConnString) != 0 {
 		d.dbConnString = config.DBConnString
 	}
+	if config.EnableHTTPS == true {
+		d.enableHTTPS = true
+	}
 }
 
 func (d *defOptions) saveConfiguration(file string) error {
@@ -107,6 +119,7 @@ func (d *defOptions) saveConfiguration(file string) error {
 		BaseURL:      d.baseURL,
 		RepoFileName: d.repoFileName,
 		DBConnString: d.dbConnString,
+		EnableHTTPS:  d.enableHTTPS,
 	}
 	configFile, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
 	if err != nil {
@@ -124,6 +137,7 @@ func (d *defOptions) setFlags() {
 	flag.StringVar(&d.baseURL, "b", d.baseURL, "a response address string")
 	flag.StringVar(&d.repoFileName, "f", d.repoFileName, "a file storage path string")
 	flag.StringVar(&d.dbConnString, "d", d.dbConnString, "a db connection string")
+	flag.BoolVar(&d.enableHTTPS, "s", d.enableHTTPS, "enable https connection")
 
 	flag.Parse()
 
@@ -141,6 +155,7 @@ func NewDefOptions() models.Options {
 		"http://localhost:8080",
 		appDir + `/local.gob`,
 		"user=kseikseich dbname=yap sslmode=disable",
+		false,
 	}
 
 	f := appDir + `/config.json`

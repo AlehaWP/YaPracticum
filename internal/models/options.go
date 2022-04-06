@@ -6,4 +6,5 @@ type Options interface {
 	RespBaseURL() string
 	RepoFileName() string
 	DBConnString() string
+	HTTPS() bool
 }

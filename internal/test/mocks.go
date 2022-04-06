@@ -71,3 +71,7 @@ func (o *OptsMock) DBConnString() string {
 	args := o.Called()
 	return args.String(0)
 }
+func (o *OptsMock) HTTPS() bool {
+	args := o.Called()
+	return args.Bool(0)
+}
