@@ -16,6 +16,7 @@ type defOptions struct {
 	baseURL      string
 	repoFileName string
 	dbConnString string
+	config       string
 	enableHTTPS  bool
 }
 
@@ -40,47 +41,33 @@ func (d defOptions) HTTPS() bool {
 }
 
 type Config struct {
-	ServAddr     string `env:"SERVER_ADDRESS"`
-	BaseURL      string `env:"BASE_URL"`
-	RepoFileName string `env:"FILE_STORAGE_PATH"`
-	DBConnString string `env:"DATABASE_DSN"`
-	EnableHTTPS  bool   `env:"ENABLE_HTTPS"`
+	ServAddr     string `env:"SERVER_ADDRESS" json:"server_address"`
+	BaseURL      string `env:"BASE_URL" json:"base_url"`
+	RepoFileName string `env:"FILE_STORAGE_PATH" json:"file_storage_dsn"`
+	DBConnString string `env:"DATABASE_DSN" json:"database_dsn"`
+	Config       string `env:"CONFIG" json:"-"`
+	EnableHTTPS  bool   `env:"ENABLE_HTTPS" json:"enable_https"`
 }
 
-//checkEnv for get options from env to default application options.
-func (d *defOptions) checkEnv() {
-
-	e := &Config{}
-	err := env.Parse(e)
-	if err != nil {
-		fmt.Println(err.Error())
+func (d *defOptions) fillFromConf(c *Config) {
+	if len(c.ServAddr) != 0 && len(d.servAddr) == 0 {
+		d.servAddr = c.ServAddr
 	}
-	if len(e.ServAddr) != 0 {
-		d.servAddr = e.ServAddr
+	if len(c.BaseURL) != 0 && len(d.baseURL) == 0 {
+		d.baseURL = c.BaseURL
 	}
-	if len(e.BaseURL) != 0 {
-		d.baseURL = e.BaseURL
+	if len(c.RepoFileName) != 0 && len(d.repoFileName) == 0 {
+		d.repoFileName = c.RepoFileName
 	}
-	if len(e.RepoFileName) != 0 {
-		d.repoFileName = e.RepoFileName
+	if len(c.DBConnString) != 0 && len(d.dbConnString) == 0 {
+		d.dbConnString = c.DBConnString
 	}
-	if len(e.DBConnString) != 0 {
-		d.dbConnString = e.DBConnString
-	}
-	if e.EnableHTTPS == true {
+	if c.EnableHTTPS == true {
 		d.enableHTTPS = true
 	}
-}
-
-func exists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
+	if len(c.Config) != 0 && len(d.config) == 0 {
+		d.config = c.Config
 	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return false, err
 }
 
 func (d *defOptions) readConfig(file string) {
@@ -96,21 +83,43 @@ func (d *defOptions) readConfig(file string) {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	if len(config.ServAddr) != 0 {
-		d.servAddr = config.ServAddr
+	d.fillFromConf(config)
+}
+
+func (d *defOptions) setDefault(appDir string) {
+
+	config := &Config{
+		"localhost:80",
+		"http://localhost:8080",
+		appDir + `/local.gob`,
+		"user=kseikseich dbname=yap sslmode=disable",
+		"config.json",
+		false,
 	}
-	if len(config.BaseURL) != 0 {
-		d.baseURL = config.BaseURL
+	d.fillFromConf(config)
+}
+
+//checkEnv for get options from env to default application options.
+func (d *defOptions) checkEnv() {
+
+	e := &Config{}
+	err := env.Parse(e)
+	if err != nil {
+		fmt.Println(err.Error())
 	}
-	if len(config.RepoFileName) != 0 {
-		d.repoFileName = config.RepoFileName
+	d.fillFromConf(e)
+
+}
+
+func exists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
 	}
-	if len(config.DBConnString) != 0 {
-		d.dbConnString = config.DBConnString
+	if os.IsNotExist(err) {
+		return false, nil
 	}
-	if config.EnableHTTPS == true {
-		d.enableHTTPS = true
-	}
+	return false, err
 }
 
 func (d *defOptions) saveConfiguration(file string) error {
@@ -138,33 +147,33 @@ func (d *defOptions) setFlags() {
 	flag.StringVar(&d.repoFileName, "f", d.repoFileName, "a file storage path string")
 	flag.StringVar(&d.dbConnString, "d", d.dbConnString, "a db connection string")
 	flag.BoolVar(&d.enableHTTPS, "s", d.enableHTTPS, "enable https connection")
+	flag.StringVar(&d.config, "c", d.config, "a config file name")
 
 	flag.Parse()
 
 }
 
-// NewDefOptions return obj like Options interfase.
+// NewDefOptions return obj like Options interfasc.
 func NewDefOptions() models.Options {
 	appDir, err := os.Getwd()
 	if err != nil {
 		fmt.Println("Не удалось найти каталог программы!")
 	}
 
-	opt := &defOptions{
-		"localhost:8080",
-		"http://localhost:8080",
-		appDir + `/local.gob`,
-		"user=kseikseich dbname=yap sslmode=disable",
-		false,
+	opt := &defOptions{}
+
+	opt.setFlags()
+	opt.checkEnv()
+	opt.setDefault(appDir)
+
+	if len(opt.config) == 0 {
+		opt.config = "config.json"
 	}
 
-	f := appDir + `/config.json`
-	// if ok, _ := exists(f); ok {
-	// 	opt.readConfig(f)
-	// }
-
-	opt.checkEnv()
-	opt.setFlags()
+	f := appDir + string(os.PathSeparator) + opt.config
+	if ok, _ := exists(f); ok {
+		opt.readConfig(f)
+	}
 	opt.saveConfiguration(f)
 
 	return opt
