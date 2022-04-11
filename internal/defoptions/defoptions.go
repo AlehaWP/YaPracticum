@@ -89,7 +89,7 @@ func (d *defOptions) readConfig(file string) {
 func (d *defOptions) setDefault(appDir string) {
 
 	config := &Config{
-		"localhost:80",
+		"localhost:8080",
 		"http://localhost:8080",
 		appDir + `/local.gob`,
 		"user=kseikseich dbname=yap sslmode=disable",
