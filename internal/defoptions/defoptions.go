@@ -62,11 +62,11 @@ func (d *defOptions) fillFromConf(c *Config) {
 	if len(c.DBConnString) != 0 && len(d.dbConnString) == 0 {
 		d.dbConnString = c.DBConnString
 	}
-	if c.EnableHTTPS == true {
-		d.enableHTTPS = true
-	}
 	if len(c.Config) != 0 && len(d.config) == 0 {
 		d.config = c.Config
+	}
+	if c.EnableHTTPS {
+		d.enableHTTPS = true
 	}
 }
 
@@ -93,7 +93,7 @@ func (d *defOptions) setDefault(appDir string) {
 		"http://localhost:8080",
 		appDir + `/local.gob`,
 		"user=kseikseich dbname=yap sslmode=disable",
-		"config.json",
+		"",
 		false,
 	}
 	d.fillFromConf(config)
@@ -164,17 +164,16 @@ func NewDefOptions() models.Options {
 
 	opt.setFlags()
 	opt.checkEnv()
+
+	if len(opt.config) != 0 {
+		f := appDir + string(os.PathSeparator) + opt.config
+		if ok, _ := exists(f); ok {
+			opt.readConfig(f)
+		}
+		opt.saveConfiguration(f)
+	}
+
 	opt.setDefault(appDir)
-
-	if len(opt.config) == 0 {
-		opt.config = "config.json"
-	}
-
-	f := appDir + string(os.PathSeparator) + opt.config
-	if ok, _ := exists(f); ok {
-		opt.readConfig(f)
-	}
-	opt.saveConfiguration(f)
 
 	return opt
 }
