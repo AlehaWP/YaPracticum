@@ -1,1 +1,0 @@
-{"server_address":"localhost:80","base_url":"http://localhost:8080","file_storage_dsn":"/home/kseikseich/Go/github.com/AlehaWP/YaPracticum.git/cmd/shortener/local.gob","database_dsn":"user=kseikseich dbname=yap sslmode=disable","enable_https":true}
