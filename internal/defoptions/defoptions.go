@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"net"
 	"os"
 
 	"github.com/AlehaWP/YaPracticum.git/internal/models"
@@ -38,7 +39,21 @@ func (d defOptions) DBConnString() string {
 }
 
 func (d defOptions) IsTrustedIp(ip string) bool {
+	ip2 := net.ParseIP(ip)
+	if ip2 == nil {
+		return false
+	}
+
 	if len(d.trustedSubnet) == 0 {
+		return false
+	}
+
+	_, n, err := net.ParseCIDR(d.trustedSubnet)
+	if err != nil {
+		return false
+	}
+
+	if ok := n.Contains(ip2); !ok {
 		return false
 	}
 	return true

@@ -79,3 +79,8 @@ func (o *OptsMock) HTTPS() bool {
 	args := o.Called()
 	return args.Bool(0)
 }
+
+func (o *OptsMock) IsTrustedIp(ip string) bool {
+	args := o.Called(ip)
+	return args.Bool(0)
+}

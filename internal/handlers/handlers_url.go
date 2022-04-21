@@ -111,6 +111,17 @@ func HandlerAPIURLsPost(w http.ResponseWriter, r *http.Request) {
 
 //HandlerReturnStats return statistics
 func HandlerReturnStats(w http.ResponseWriter, r *http.Request) {
+	ip := r.Header.Get("X-Real-IP")
+	if len(ip) == 0 {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	if !Opt.IsTrustedIp(ip) {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
 	ctx := r.Context()
 	s, err := Repo.GetStatistics(ctx)
 	if err != nil {
