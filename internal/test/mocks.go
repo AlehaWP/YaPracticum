@@ -48,6 +48,10 @@ func (m *RepoMock) SetURLsToDel(context.Context, []string, string) error {
 	return nil
 }
 
+func (m *RepoMock) GetStatistics(context.Context) (models.Statistics, error) {
+	return models.Statistics{}, nil
+}
+
 type OptsMock struct {
 	mock.Mock
 }

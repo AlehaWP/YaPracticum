@@ -7,6 +7,11 @@ type URLs struct {
 	OriginalURL string `json:"original_url"`
 }
 
+type Statistics struct {
+	Urls  string `json:"urls"`
+	Users string `json:"users"`
+}
+
 //Repository interface repo urls.
 type Repository interface {
 	GetURL(context.Context, string) (string, error)
@@ -17,4 +22,5 @@ type Repository interface {
 	GetUserURLs(context.Context, string) ([]URLs, error)
 	CheckDBConnection(context.Context) error
 	SetURLsToDel(context.Context, []string, string) error
+	GetStatistics(context.Context) (Statistics, error)
 }

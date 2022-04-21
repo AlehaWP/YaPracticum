@@ -39,9 +39,9 @@ func (d defOptions) DBConnString() string {
 
 func (d defOptions) IsTrustedIp(ip string) bool {
 	if len(d.trustedSubnet) == 0 {
-		return true
+		return false
 	}
-	return false
+	return true
 }
 
 func (d defOptions) HTTPS() bool {

@@ -109,6 +109,26 @@ func HandlerAPIURLsPost(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
+//HandlerReturnStats return statistics
+func HandlerReturnStats(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	s, err := Repo.GetStatistics(ctx)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	res, err := json.Marshal(&s)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(res)
+}
+
 // HandlerCheckDBConnect returns connection to DB status.
 func HandlerCheckDBConnect(w http.ResponseWriter, r *http.Request) {
 	if err := Repo.CheckDBConnection(r.Context()); err != nil {
