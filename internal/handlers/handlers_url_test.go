@@ -24,6 +24,7 @@ func newOptsMock() *test.OptsMock {
 	optMock.On("RespBaseURL").Return("http://localhost")
 	optMock.On("RepoFileName").Return("local.db")
 	optMock.On("DBConnString").Return("user=kseikseich dbname=yap sslmode=disable")
+	optMock.On("HTTPS").Return(false)
 	return optMock
 }
 

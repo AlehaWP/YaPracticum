@@ -16,6 +16,8 @@ type defOptions struct {
 	baseURL      string
 	repoFileName string
 	dbConnString string
+	config       string
+	enableHTTPS  bool
 }
 
 func (d defOptions) ServAddr() string {
@@ -34,44 +36,38 @@ func (d defOptions) DBConnString() string {
 	return d.dbConnString
 }
 
+func (d defOptions) HTTPS() bool {
+	return d.enableHTTPS
+}
+
 type Config struct {
-	ServAddr     string `env:"SERVER_ADDRESS"`
-	BaseURL      string `env:"BASE_URL"`
-	RepoFileName string `env:"FILE_STORAGE_PATH"`
-	DBConnString string `env:"DATABASE_DSN"`
+	ServAddr     string `env:"SERVER_ADDRESS" json:"server_address"`
+	BaseURL      string `env:"BASE_URL" json:"base_url"`
+	RepoFileName string `env:"FILE_STORAGE_PATH" json:"file_storage_dsn"`
+	DBConnString string `env:"DATABASE_DSN" json:"database_dsn"`
+	Config       string `env:"CONFIG" json:"-"`
+	EnableHTTPS  bool   `env:"ENABLE_HTTPS" json:"enable_https"`
 }
 
-//checkEnv for get options from env to default application options.
-func (d *defOptions) checkEnv() {
-
-	e := &Config{}
-	err := env.Parse(e)
-	if err != nil {
-		fmt.Println(err.Error())
+func (d *defOptions) fillFromConf(c *Config) {
+	if len(c.ServAddr) != 0 && len(d.servAddr) == 0 {
+		d.servAddr = c.ServAddr
 	}
-	if len(e.ServAddr) != 0 {
-		d.servAddr = e.ServAddr
+	if len(c.BaseURL) != 0 && len(d.baseURL) == 0 {
+		d.baseURL = c.BaseURL
 	}
-	if len(e.BaseURL) != 0 {
-		d.baseURL = e.BaseURL
+	if len(c.RepoFileName) != 0 && len(d.repoFileName) == 0 {
+		d.repoFileName = c.RepoFileName
 	}
-	if len(e.RepoFileName) != 0 {
-		d.repoFileName = e.RepoFileName
+	if len(c.DBConnString) != 0 && len(d.dbConnString) == 0 {
+		d.dbConnString = c.DBConnString
 	}
-	if len(e.DBConnString) != 0 {
-		d.dbConnString = e.DBConnString
+	if len(c.Config) != 0 && len(d.config) == 0 {
+		d.config = c.Config
 	}
-}
-
-func exists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
+	if c.EnableHTTPS {
+		d.enableHTTPS = true
 	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return false, err
 }
 
 func (d *defOptions) readConfig(file string) {
@@ -87,18 +83,43 @@ func (d *defOptions) readConfig(file string) {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	if len(config.ServAddr) != 0 {
-		d.servAddr = config.ServAddr
+	d.fillFromConf(config)
+}
+
+func (d *defOptions) setDefault(appDir string) {
+
+	config := &Config{
+		"localhost:8080",
+		"http://localhost:8080",
+		appDir + `/local.gob`,
+		"user=kseikseich dbname=yap sslmode=disable",
+		"",
+		false,
 	}
-	if len(config.BaseURL) != 0 {
-		d.baseURL = config.BaseURL
+	d.fillFromConf(config)
+}
+
+//checkEnv for get options from env to default application options.
+func (d *defOptions) checkEnv() {
+
+	e := &Config{}
+	err := env.Parse(e)
+	if err != nil {
+		fmt.Println(err.Error())
 	}
-	if len(config.RepoFileName) != 0 {
-		d.repoFileName = config.RepoFileName
+	d.fillFromConf(e)
+
+}
+
+func exists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
 	}
-	if len(config.DBConnString) != 0 {
-		d.dbConnString = config.DBConnString
+	if os.IsNotExist(err) {
+		return false, nil
 	}
+	return false, err
 }
 
 func (d *defOptions) saveConfiguration(file string) error {
@@ -107,6 +128,7 @@ func (d *defOptions) saveConfiguration(file string) error {
 		BaseURL:      d.baseURL,
 		RepoFileName: d.repoFileName,
 		DBConnString: d.dbConnString,
+		EnableHTTPS:  d.enableHTTPS,
 	}
 	configFile, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
 	if err != nil {
@@ -124,33 +146,34 @@ func (d *defOptions) setFlags() {
 	flag.StringVar(&d.baseURL, "b", d.baseURL, "a response address string")
 	flag.StringVar(&d.repoFileName, "f", d.repoFileName, "a file storage path string")
 	flag.StringVar(&d.dbConnString, "d", d.dbConnString, "a db connection string")
+	flag.BoolVar(&d.enableHTTPS, "s", d.enableHTTPS, "enable https connection")
+	flag.StringVar(&d.config, "c", d.config, "a config file name")
 
 	flag.Parse()
 
 }
 
-// NewDefOptions return obj like Options interfase.
+// NewDefOptions return obj like Options interfasc.
 func NewDefOptions() models.Options {
 	appDir, err := os.Getwd()
 	if err != nil {
 		fmt.Println("Не удалось найти каталог программы!")
 	}
 
-	opt := &defOptions{
-		"localhost:8080",
-		"http://localhost:8080",
-		appDir + `/local.gob`,
-		"user=kseikseich dbname=yap sslmode=disable",
+	opt := &defOptions{}
+
+	opt.setFlags()
+	opt.checkEnv()
+
+	if len(opt.config) != 0 {
+		f := appDir + string(os.PathSeparator) + opt.config
+		if ok, _ := exists(f); ok {
+			opt.readConfig(f)
+		}
+		opt.saveConfiguration(f)
 	}
 
-	f := appDir + `/config.json`
-	// if ok, _ := exists(f); ok {
-	// 	opt.readConfig(f)
-	// }
-
-	opt.checkEnv()
-	opt.setFlags()
-	opt.saveConfiguration(f)
+	opt.setDefault(appDir)
 
 	return opt
 }

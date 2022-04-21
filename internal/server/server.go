@@ -10,17 +10,19 @@ import (
 	"github.com/AlehaWP/YaPracticum.git/internal/middlewares"
 	"github.com/AlehaWP/YaPracticum.git/internal/models"
 	"github.com/go-chi/chi/v5"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 type Server struct {
 	http.Server
+	opt  models.Options
+	repo models.Repository
 }
 
-//Start server with router.
-func (s *Server) Start(ctx context.Context, repo models.Repository, opt models.Options) {
+func (s *Server) newChiRouter() *chi.Mux {
 	r := chi.NewRouter()
-	handlers.NewHandlers(repo, opt)
-	middlewares.NewCookie(repo)
+	handlers.NewHandlers(s.repo, s.opt)
+	middlewares.NewCookie(s.repo)
 	r.Use(middlewares.SetCookieUser, middlewares.ZipHandlerRead, middlewares.ZipHandlerWrite)
 
 	r.HandleFunc("/debug/pprof/*", pprof.Index)
@@ -47,10 +49,30 @@ func (s *Server) Start(ctx context.Context, repo models.Repository, opt models.O
 	r.Post("/api/shorten", handlers.HandlerAPIURLPost)
 	r.Post("/api/shorten/batch", handlers.HandlerAPIURLsPost)
 	r.Delete("/api/user/urls", handlers.HandlerDeleteUserUrls)
+	return r
+}
 
+//Start server with router.
+func (s *Server) Start(ctx context.Context, repo models.Repository, opt models.Options) {
+	s.opt = opt
+	s.repo = repo
+	s.Handler = s.newChiRouter()
 	s.Addr = opt.ServAddr()
-	s.Handler = r
-	go s.ListenAndServe()
+
+	if s.opt.HTTPS() {
+		manager := &autocert.Manager{
+			Cache:  autocert.DirCache("cache-dir"),
+			Prompt: autocert.AcceptTOS,
+			// HostPolicy: autocert.HostWhitelist(s.opt.ServAddr()),
+		}
+
+		s.TLSConfig = manager.TLSConfig()
+		go s.ListenAndServeTLS("", "")
+	}
+
+	if !s.opt.HTTPS() {
+		go s.ListenAndServe()
+	}
 
 	<-ctx.Done()
 	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*5)
