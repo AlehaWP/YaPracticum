@@ -12,12 +12,13 @@ import (
 )
 
 type defOptions struct {
-	servAddr     string
-	baseURL      string
-	repoFileName string
-	dbConnString string
-	config       string
-	enableHTTPS  bool
+	servAddr      string
+	baseURL       string
+	repoFileName  string
+	dbConnString  string
+	config        string
+	trustedSubnet string
+	enableHTTPS   bool
 }
 
 func (d defOptions) ServAddr() string {
@@ -36,17 +37,25 @@ func (d defOptions) DBConnString() string {
 	return d.dbConnString
 }
 
+func (d defOptions) IsTrustedIp(ip string) bool {
+	if len(d.trustedSubnet) == 0 {
+		return true
+	}
+	return false
+}
+
 func (d defOptions) HTTPS() bool {
 	return d.enableHTTPS
 }
 
 type Config struct {
-	ServAddr     string `env:"SERVER_ADDRESS" json:"server_address"`
-	BaseURL      string `env:"BASE_URL" json:"base_url"`
-	RepoFileName string `env:"FILE_STORAGE_PATH" json:"file_storage_dsn"`
-	DBConnString string `env:"DATABASE_DSN" json:"database_dsn"`
-	Config       string `env:"CONFIG" json:"-"`
-	EnableHTTPS  bool   `env:"ENABLE_HTTPS" json:"enable_https"`
+	ServAddr      string `env:"SERVER_ADDRESS" json:"server_address"`
+	BaseURL       string `env:"BASE_URL" json:"base_url"`
+	RepoFileName  string `env:"FILE_STORAGE_PATH" json:"file_storage_dsn"`
+	DBConnString  string `env:"DATABASE_DSN" json:"database_dsn"`
+	Config        string `env:"CONFIG" json:"-"`
+	TrustedSubnet string `env:"TRUSTED_SUBNET" json:"trusted_subnet"`
+	EnableHTTPS   bool   `env:"ENABLE_HTTPS" json:"enable_https"`
 }
 
 func (d *defOptions) fillFromConf(c *Config) {
@@ -64,6 +73,9 @@ func (d *defOptions) fillFromConf(c *Config) {
 	}
 	if len(c.Config) != 0 && len(d.config) == 0 {
 		d.config = c.Config
+	}
+	if len(d.trustedSubnet) != 0 && len(d.trustedSubnet) == 0 {
+		d.trustedSubnet = c.TrustedSubnet
 	}
 	if c.EnableHTTPS {
 		d.enableHTTPS = true
@@ -89,18 +101,19 @@ func (d *defOptions) readConfig(file string) {
 func (d *defOptions) setDefault(appDir string) {
 
 	config := &Config{
-		"localhost:8080",
-		"http://localhost:8080",
-		appDir + `/local.gob`,
-		"user=kseikseich dbname=yap sslmode=disable",
-		"",
-		false,
+		ServAddr:      "localhost:8080",
+		BaseURL:       "http://localhost:8080",
+		RepoFileName:  appDir + `/local.gob`,
+		DBConnString:  "user=kseikseich dbname=yap sslmode=disable",
+		Config:        "",
+		TrustedSubnet: "",
+		EnableHTTPS:   false,
 	}
 	d.fillFromConf(config)
 }
 
 //checkEnv for get options from env to default application options.
-func (d *defOptions) checkEnv() {
+func (d *defOptions) parseEnv() {
 
 	e := &Config{}
 	err := env.Parse(e)
@@ -146,8 +159,9 @@ func (d *defOptions) setFlags() {
 	flag.StringVar(&d.baseURL, "b", d.baseURL, "a response address string")
 	flag.StringVar(&d.repoFileName, "f", d.repoFileName, "a file storage path string")
 	flag.StringVar(&d.dbConnString, "d", d.dbConnString, "a db connection string")
-	flag.BoolVar(&d.enableHTTPS, "s", d.enableHTTPS, "enable https connection")
 	flag.StringVar(&d.config, "c", d.config, "a config file name")
+	flag.StringVar(&d.trustedSubnet, "t", d.trustedSubnet, "a trusted ip CIDR xxx.xxx.xxx.xxx/32")
+	flag.BoolVar(&d.enableHTTPS, "s", d.enableHTTPS, "enable https connection")
 
 	flag.Parse()
 
@@ -163,7 +177,7 @@ func NewDefOptions() models.Options {
 	opt := &defOptions{}
 
 	opt.setFlags()
-	opt.checkEnv()
+	opt.parseEnv()
 
 	if len(opt.config) != 0 {
 		f := appDir + string(os.PathSeparator) + opt.config
