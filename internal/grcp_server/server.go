@@ -1,21 +1,20 @@
-package main
+package grcp_server
 
 import (
 	"context"
 	"fmt"
 	"net"
 
-	"github.com/AlehaWP/YaPracticum.git/cmd/grcp_server/internal/defoptions"
-	"github.com/AlehaWP/YaPracticum.git/cmd/grcp_server/internal/models"
-	"github.com/AlehaWP/YaPracticum.git/cmd/grcp_server/internal/repository"
+	"github.com/AlehaWP/YaPracticum.git/internal/models"
+	"github.com/AlehaWP/YaPracticum.git/internal/repository"
 
-	pb "github.com/AlehaWP/YaPracticum.git/cmd/grcp_server/proto"
+	pb "github.com/AlehaWP/YaPracticum.git/internal/grcp_server/proto"
 
 	"google.golang.org/grpc"
 )
 
-var Repo models.Repository
-var BaseURL string
+var repo models.Repository
+var baseURL string
 
 // UsersServer поддерживает все необходимые методы.
 type URLsServer struct {
@@ -29,7 +28,7 @@ func (s *URLsServer) AddYRL(ctx context.Context, in *pb.AddURLRequest) (*pb.AddU
 	var response pb.AddURLResponse
 
 	userID := in.User
-	retURL, err := Repo.SaveURL(ctx, in.Url.Url, BaseURL, userID)
+	retURL, err := repo.SaveURL(ctx, in.Url.Url, baseURL, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -39,12 +38,16 @@ func (s *URLsServer) AddYRL(ctx context.Context, in *pb.AddURLRequest) (*pb.AddU
 
 }
 
-func main() {
-	var err error
-	opt := defoptions.NewDefOptions()
-	ctx := context.Background()
-	Repo, err = repository.NewServerRepo(ctx, opt.DBConnString())
-	BaseURL = opt.RespBaseURL()
+func Start(ctx context.Context, opt models.Options) {
+	sr, err := repository.NewServerRepo(ctx, opt.DBConnString())
+	if err != nil {
+		fmt.Println("Ошибка при подключении к БД: ", err)
+		return
+	}
+	defer sr.Close()
+
+	repo = sr
+	baseURL = opt.RespBaseURL()
 	// определяем порт для сервера
 	listen, err := net.Listen("tcp", ":3200")
 	if err != nil {
