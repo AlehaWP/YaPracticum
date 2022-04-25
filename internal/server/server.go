@@ -51,7 +51,7 @@ func (s *Server) newChiRouter() *chi.Mux {
 	r.Post("/", handlers.HandlerURLPost)
 	r.Post("/api/shorten", handlers.HandlerAPIURLPost)
 	r.Post("/api/shorten/batch", handlers.HandlerAPIURLsPost)
-	r.Delete("/api/user/urls", handlers.HandlerReturnStats)
+	r.Delete("/api/user/urls", handlers.HandlerDeleteUserUrls)
 	return r
 }
 
