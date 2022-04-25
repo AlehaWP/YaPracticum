@@ -7,4 +7,5 @@ type Options interface {
 	RepoFileName() string
 	DBConnString() string
 	HTTPS() bool
+	IsTrustedIP(string) bool
 }

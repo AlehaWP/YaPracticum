@@ -41,6 +41,7 @@ func (s *Server) newChiRouter() *chi.Mux {
 
 	r.Get("/api/user/urls", handlers.HandlerUserPostURLs)
 	r.Get("/ping", handlers.HandlerCheckDBConnect)
+	r.Get("/api/internal/stats", handlers.HandlerReturnStats)
 	r.Route("/{id}", func(r chi.Router) {
 		r.Use(middlewares.URLCtx)
 		r.Get("/", handlers.HandlerURLGet)
@@ -53,9 +54,10 @@ func (s *Server) newChiRouter() *chi.Mux {
 }
 
 //Start server with router.
-func (s *Server) Start(ctx context.Context, repo models.Repository, opt models.Options) {
+func (s *Server) Start(ctx context.Context, sr models.Repository, opt models.Options) {
+
 	s.opt = opt
-	s.repo = repo
+	s.repo = sr
 	s.Handler = s.newChiRouter()
 	s.Addr = opt.ServAddr()
 

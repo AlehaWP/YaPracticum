@@ -48,6 +48,10 @@ func (m *RepoMock) SetURLsToDel(context.Context, []string, string) error {
 	return nil
 }
 
+func (m *RepoMock) GetStatistics(context.Context) (models.Statistics, error) {
+	return models.Statistics{}, nil
+}
+
 type OptsMock struct {
 	mock.Mock
 }
@@ -73,5 +77,10 @@ func (o *OptsMock) DBConnString() string {
 }
 func (o *OptsMock) HTTPS() bool {
 	args := o.Called()
+	return args.Bool(0)
+}
+
+func (o *OptsMock) IsTrustedIP(ip string) bool {
+	args := o.Called(ip)
 	return args.Bool(0)
 }

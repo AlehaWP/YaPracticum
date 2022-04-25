@@ -174,6 +174,27 @@ func (s *ServerRepo) GetUserURLs(ctx context.Context, userEncID string) ([]model
 	return m, nil
 }
 
+func (s *ServerRepo) GetStatistics(ctx context.Context) (models.Statistics, error) {
+	db := s.db
+	ctx, cancelfunc := context.WithTimeout(ctx, 5*time.Second)
+	defer cancelfunc()
+	m := models.Statistics{}
+	q := `SELECT count(id) as count from urls`
+	row := db.QueryRowContext(ctx, q)
+	if err := row.Scan(&m.Urls); err != nil {
+		return m, err
+	}
+
+	q = `SELECT count(id) as count from users`
+	row = db.QueryRowContext(ctx, q)
+	if err := row.Scan(&m.Users); err != nil {
+		return m, err
+	}
+
+	return m, nil
+
+}
+
 func (s *ServerRepo) FindUser(ctx context.Context, userEncID string) (finded bool) {
 	db := s.db
 	ctx, cancelfunc := context.WithTimeout(ctx, 5*time.Second)
