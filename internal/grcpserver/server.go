@@ -24,7 +24,7 @@ type URLsServer struct {
 }
 
 // AddUser реализует интерфейс добавления пользователя.
-func (s *URLsServer) AddYRL(ctx context.Context, in *pb.AddURLRequest) (*pb.AddURLResponse, error) {
+func (s *URLsServer) AddURL(ctx context.Context, in *pb.AddURLRequest) (*pb.AddURLResponse, error) {
 	var response pb.AddURLResponse
 
 	userID := in.User
