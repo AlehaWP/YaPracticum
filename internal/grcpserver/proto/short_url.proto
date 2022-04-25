@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option go_package = "github.com/AlehaWP/YaPracticum.git/cmd/grpcserver/proto/proto";
+
+package proto;
+
+message URL {
+  string url = 1;
+}
+
+message AddURLRequest {
+  string user = 1;
+  URL url = 2;
+}
+
+message AddURLResponse {
+  URL url = 1;
+  string error = 2; // ошибка
+}
+
+service URLs {
+  rpc AddURL(AddURLRequest) returns (AddURLResponse);
+}
