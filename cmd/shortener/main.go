@@ -26,8 +26,9 @@ func main() {
 	opt := defoptions.NewDefOptions()
 
 	server := new(server.Server)
-	go signal.HandleQuit(cancel)
 	go server.Start(ctx, opt)
 	go grcpserver.Start(ctx, opt)
+
+	go signal.HandleQuit(cancel)
 	<-ctx.Done()
 }
