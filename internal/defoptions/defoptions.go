@@ -152,11 +152,12 @@ func exists(path string) (bool, error) {
 
 func (d *defOptions) saveConfiguration(file string) error {
 	config := &Config{
-		ServAddr:     d.servAddr,
-		BaseURL:      d.baseURL,
-		RepoFileName: d.repoFileName,
-		DBConnString: d.dbConnString,
-		EnableHTTPS:  d.enableHTTPS,
+		ServAddr:      d.servAddr,
+		BaseURL:       d.baseURL,
+		RepoFileName:  d.repoFileName,
+		DBConnString:  d.dbConnString,
+		TrustedSubnet: d.trustedSubnet,
+		EnableHTTPS:   d.enableHTTPS,
 	}
 	configFile, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
 	if err != nil {
