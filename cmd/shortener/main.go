@@ -7,6 +7,7 @@ import (
 
 	"github.com/AlehaWP/YaPracticum.git/internal/defoptions"
 	"github.com/AlehaWP/YaPracticum.git/internal/grcpserver"
+	"github.com/AlehaWP/YaPracticum.git/internal/repository"
 	"github.com/AlehaWP/YaPracticum.git/internal/server"
 	"github.com/AlehaWP/YaPracticum.git/internal/signal"
 )
@@ -25,9 +26,16 @@ func main() {
 	defer cancel()
 	opt := defoptions.NewDefOptions()
 
+	sr, err := repository.NewServerRepo(ctx, opt.DBConnString())
+	if err != nil {
+		fmt.Println("Ошибка при подключении к БД: ", err)
+		return
+	}
+	defer sr.Close()
+
 	server := new(server.Server)
-	go server.Start(ctx, opt)
-	go grcpserver.Start(ctx, opt)
+	go server.Start(ctx, sr, opt)
+	go grcpserver.Start(ctx, sr, opt)
 
 	go signal.HandleQuit(cancel)
 	<-ctx.Done()

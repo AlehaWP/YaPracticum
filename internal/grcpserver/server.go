@@ -6,7 +6,6 @@ import (
 	"net"
 
 	"github.com/AlehaWP/YaPracticum.git/internal/models"
-	"github.com/AlehaWP/YaPracticum.git/internal/repository"
 
 	pb "github.com/AlehaWP/YaPracticum.git/internal/grcpserver/proto"
 
@@ -38,14 +37,7 @@ func (s *URLsServer) AddURL(ctx context.Context, in *pb.AddURLRequest) (*pb.AddU
 
 }
 
-func Start(ctx context.Context, opt models.Options) {
-	sr, err := repository.NewServerRepo(ctx, opt.DBConnString())
-	if err != nil {
-		fmt.Println("Ошибка при подключении к БД: ", err)
-		return
-	}
-	defer sr.Close()
-
+func Start(ctx context.Context, sr models.Repository, opt models.Options) {
 	repo = sr
 	baseURL = opt.RespBaseURL()
 	// определяем порт для сервера
@@ -58,7 +50,8 @@ func Start(ctx context.Context, opt models.Options) {
 	// регистрируем сервис
 	pb.RegisterURLsServer(s, &URLsServer{})
 	// получаем запрос gRpc
-	if err := s.Serve(listen); err != nil {
-		fmt.Println(err)
-	}
+	go s.Serve(listen)
+
+	<-ctx.Done()
+	s.Stop()
 }

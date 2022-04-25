@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"net/http/pprof"
 	"time"
@@ -10,7 +9,6 @@ import (
 	"github.com/AlehaWP/YaPracticum.git/internal/handlers"
 	"github.com/AlehaWP/YaPracticum.git/internal/middlewares"
 	"github.com/AlehaWP/YaPracticum.git/internal/models"
-	"github.com/AlehaWP/YaPracticum.git/internal/repository"
 	"github.com/go-chi/chi/v5"
 	"golang.org/x/crypto/acme/autocert"
 )
@@ -56,13 +54,8 @@ func (s *Server) newChiRouter() *chi.Mux {
 }
 
 //Start server with router.
-func (s *Server) Start(ctx context.Context, opt models.Options) {
-	sr, err := repository.NewServerRepo(ctx, opt.DBConnString())
-	if err != nil {
-		fmt.Println("Ошибка при подключении к БД: ", err)
-		return
-	}
-	defer sr.Close()
+func (s *Server) Start(ctx context.Context, sr models.Repository, opt models.Options) {
+
 	s.opt = opt
 	s.repo = sr
 	s.Handler = s.newChiRouter()
