@@ -117,7 +117,7 @@ func HandlerReturnStats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !Opt.IsTrustedIp(ip) {
+	if !Opt.IsTrustedIP(ip) {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}

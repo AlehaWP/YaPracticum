@@ -38,7 +38,7 @@ func (d defOptions) DBConnString() string {
 	return d.dbConnString
 }
 
-func (d defOptions) IsTrustedIp(ip string) bool {
+func (d defOptions) IsTrustedIP(ip string) bool {
 	ip2 := net.ParseIP(ip)
 	if ip2 == nil {
 		return false

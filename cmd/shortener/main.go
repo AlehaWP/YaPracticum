@@ -6,7 +6,7 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/AlehaWP/YaPracticum.git/internal/defoptions"
-	"github.com/AlehaWP/YaPracticum.git/internal/grcp_server"
+	"github.com/AlehaWP/YaPracticum.git/internal/grcpserver"
 	"github.com/AlehaWP/YaPracticum.git/internal/server"
 	"github.com/AlehaWP/YaPracticum.git/internal/signal"
 )
@@ -28,6 +28,6 @@ func main() {
 	s := new(server.Server)
 	go signal.HandleQuit(cancel)
 	go s.Start(ctx, opt)
-	go grcp_server.Start(ctx, opt)
+	go grcpserver.Start(ctx, opt)
 	<-ctx.Done()
 }
