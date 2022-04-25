@@ -57,8 +57,6 @@ func Start(ctx context.Context, opt models.Options) {
 	s := grpc.NewServer()
 	// регистрируем сервис
 	pb.RegisterURLsServer(s, &URLsServer{})
-
-	fmt.Println("сервер gRPC начал работу")
 	// получаем запрос gRpc
 	if err := s.Serve(listen); err != nil {
 		fmt.Println(err)

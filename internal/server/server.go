@@ -83,8 +83,6 @@ func (s *Server) Start(ctx context.Context, opt models.Options) {
 		go s.ListenAndServe()
 	}
 
-	fmt.Println("сервер HTTP начал работу")
-
 	<-ctx.Done()
 	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelFunc()
